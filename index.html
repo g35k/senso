@@ -6,6 +6,32 @@
 <title>SENSO — Learn Braille</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Baloo+2:wght@700;800&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
 <style>
+  .braille-e-cell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.09em;
+  vertical-align: middle;
+  margin: 0 0.15em 0 0.05em;
+  position: relative;
+  top: 0.2em;
+}
+.bd-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.09em;
+}
+.bd {
+  width: 0.14em;
+  height: 0.14em;
+  background: #111111;
+  border-radius: 50%;
+  display: block;
+}
+.bd-empty {
+  width: 0.14em;
+  height: 0.14em;
+  display: block;
+}
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
@@ -464,9 +490,13 @@
 <section id="hero">
   <div class="hero-canvas-wrap">
     <canvas id="heroCanvas" width="560" height="380"></canvas>
-    <h1 class="hero-title">senso</h1>
+    <h1 class="hero-title">s<span class="braille-e-cell">
+  <span class="bd-row"><span class="bd"></span><span class="bd-empty"></span></span>
+  <span class="bd-row"><span class="bd-empty"></span><span class="bd"></span></span>
+  <span class="bd-row"><span class="bd-empty"></span><span class="bd-empty"></span></span>
+</span>nso</h1>
   </div>
-  <p class="hero-sub">Learn braille with your fingertips</p>
+  <p class="hero-sub">Braille learning, made tactile</p>
   <a href="lessons.html" class="btn-begin">Begin Here</a>
   <div class="scroll-hint">scroll</div>
 </section>
@@ -474,10 +504,15 @@
 <!-- ABOUT -->
 <section id="about">
   <div class="about-inner">
-    <div class="device-photo">
-      <canvas id="deviceCanvas" width="320" height="240"></canvas>
-      <div class="device-label">SENSO device</div>
-    </div>
+    <div class="device-photo" style="background:transparent;" onclick="document.getElementById('imgModal').style.display='flex'" title="Click to zoom">
+  <img src="/sensoproto.png" alt="SENSO device" style="width:100%; height:100%; object-fit:contain; border-radius:16px; cursor:zoom-in; transform:scale(1.1);">
+  <div class="device-label">SENSO device</div>
+</div>
+
+<!-- Modal(allows user to zoom in on image)-->
+<div id="imgModal" onclick="this.style.display='none'" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; align-items:center; justify-content:center; cursor:zoom-out;">
+  <img src="/sensoproto.png" alt="SENSO device" style="max-width:90vw; max-height:90vh; object-fit:contain; border-radius:16px;">
+</div>
     <div class="about-text">
       <h2>What is SENSO?</h2>
       <p>SENSO is an affordable, compact braille learning tool designed for kids and beginners. Learn up to grade two braille with our teacher, Sen.</p>
@@ -490,27 +525,27 @@
 <section id="goal">
   <div class="goal-inner">
     <div class="goal-tag">Our Mission</div>
-    <h2>Making braille accessible to everyone</h2>
+    <h2>Breaking barriers through Braille literacy</h2>
     <p>Blindness affects over 43 million people worldwide. Braille literacy opens doors to education, independence, and opportunity — yet most learners never get access to proper tools.</p>
     <div class="goal-cards">
       <div class="goal-card">
         <div class="goal-icon" style="background:#fff0eb;">
-          <span style="font-size:24px">✋</span>
-        </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e8501a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M6 14a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4v-2.5"/></svg>
+</div>
         <h3>Tactile Learning</h3>
         <p>Muscle memory through real button presses, not screens</p>
       </div>
       <div class="goal-card">
         <div class="goal-icon" style="background:#eaf0ff;">
-          <span style="font-size:24px">📚</span>
-        </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3d6ec9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+</div>
         <h3>Grade 1 & 2</h3>
         <p>Full curriculum from alphabet to contracted braille</p>
       </div>
       <div class="goal-card">
         <div class="goal-icon" style="background:#e8f7ef;">
-          <span style="font-size:24px">💰</span>
-        </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2a9d5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+</div>
         <h3>Affordable</h3>
         <p>Designed to reach learners in under-resourced settings</p>
       </div>
@@ -615,17 +650,17 @@
     scene.add(device);
 
     // All MeshLambertMaterial = zero specular, fully matte
-    const bodyMat = new THREE.MeshLambertMaterial({ color: 0xe8e8e8 });
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x6b7280 });
     device.add(new THREE.Mesh(new THREE.BoxGeometry(6, 1.5, 4), bodyMat));
 
     // Top face slightly lighter so it reads as a separate surface
     const cap = new THREE.Mesh(new THREE.BoxGeometry(5.85, 0.07, 3.85),
-      new THREE.MeshLambertMaterial({ color: 0xf0f0f0 }));
+      new THREE.MeshLambertMaterial({ color: 0x6b7280 }));
     cap.position.y = 0.78;
     device.add(cap);
 
     // Braille dots — ivory, fully matte
-    const dotMat = new THREE.MeshLambertMaterial({ color: 0xf5f0e8 });
+    const dotMat = new THREE.MeshLambertMaterial({ color: 0xe8e4dc });
     [[-2.1,-0.95],[-1.35,-0.95],[-2.1,0],[-1.35,0],[-2.1,0.95],[-1.35,0.95]].forEach(([x,z]) => {
       const d = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.24,0.28,22), dotMat);
       d.position.set(x, 0.75+0.15, z);
@@ -639,19 +674,27 @@
     device.add(enter);
 
     // Backspace — orange, matte
-    const bs = new THREE.Mesh(new THREE.BoxGeometry(1.15,0.22,0.78),
-      new THREE.MeshLambertMaterial({ color: 0xf05a28 }));
-    bs.position.set(1.6, 0.75+0.11, 0.65);
-    device.add(bs);
+    const triShape = new THREE.Shape();
+triShape.moveTo(0, -0.45);
+triShape.lineTo(0.5, 0.35);
+triShape.lineTo(-0.5, 0.35);
+triShape.closePath();
+
+const triGeo = new THREE.ExtrudeGeometry(triShape, { depth: 0.22, bevelEnabled: false });
+const bs = new THREE.Mesh(triGeo, new THREE.MeshLambertMaterial({ color: 0xf05a28 }));
+bs.rotation.x = -Math.PI / 2;
+bs.rotation.z = Math.PI / 2;
+bs.position.set(1.6, 0.75+0.11, 0.65);
+device.add(bs);
 
     // Bottom plate
     const btm = new THREE.Mesh(new THREE.BoxGeometry(5.9, 0.06, 3.9),
-      new THREE.MeshLambertMaterial({ color: 0xcccccc }));
+      new THREE.MeshLambertMaterial({ color: 0x5a6170 }));
     btm.position.y = -0.78;
     device.add(btm);
 
     // Steep tilt: rotate a lot on X so we see top face clearly, slight Z roll
-    device.rotation.x = -0.85;
+    device.rotation.x = -0.55;
     device.rotation.z = 0.15;
 
     function animate() {
