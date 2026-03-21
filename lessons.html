@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SENSO — Lessons</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Josefin+Sans:wght@300;400&family=Raleway:wght@300;400;700;800;900&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
  
@@ -171,8 +171,9 @@
   }
   .chapter-title {
     font-size: 15px;
-    font-weight: 900;
+    font-weight: 510;
     color: var(--dark);
+    font-family: 'Raleway', sans-serif;
   }
   .chapter-count {
     font-size: 12px;
@@ -218,6 +219,7 @@
     text-transform: uppercase;
     color: var(--orange);
     border-top: 1px solid var(--mid-gray);
+    font-family: 'Raleway', sans-serif;
   }
   .section-label:first-child { border-top: 1px solid var(--mid-gray); }
  
@@ -263,9 +265,10 @@
   }
   .lesson-name {
     font-size: 14px;
-    font-weight: 800;
+    font-weight: 500;
     color: var(--dark);
     line-height: 1.3;
+    font-family: 'Raleway', sans-serif;
   }
   .lesson-row.completed .lesson-name { color: #555; }
   .lesson-type {
@@ -338,7 +341,7 @@
         <div class="chapter-icon" style="background:#eaf0ff;" ><i class="fa-solid fa-braille"></i></div>
         <div>
           <div class="chapter-title">Chapter 1: The Alphabet and Numbers</div>
-          <div class="chapter-count">6 lessons</div>
+          <div class="chapter-count">7 lessons</div>
         </div>
       </div>
       <div class="chapter-arrow"><svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div>
@@ -384,14 +387,14 @@
       <div class="lesson-row" onclick="goLesson('ch1','ch1-5')">
         <div class="lesson-dot">✓</div>
         <div class="lesson-text">
-          <div class="lesson-name">Lesson 5: Numbers 5-9</div>
+          <div class="lesson-name">Lesson 6: Numbers 5-9</div>
           <div class="lesson-type learn">Learn</div>
         </div>
       </div>
       <div class="lesson-row" onclick="goLesson('ch1','ch1-6')">
         <div class="lesson-dot">✓</div>
         <div class="lesson-text">
-          <div class="lesson-name">Lesson 6: All the Numbers! 0–9</div>
+          <div class="lesson-name">Lesson 7: All the Numbers! 0–9</div>
           <div class="lesson-type practice">Practice</div>
         </div>
       </div>
