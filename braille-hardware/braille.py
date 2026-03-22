@@ -1,28 +1,33 @@
-import pyttsx3
 import os
 import json
 import random
+import pygame
+import time
+from gtts import gTTS
 
 # ─── TTS ─────────────────────────────────────────────────────
-engine = pyttsx3.init()
-engine.setProperty('rate', 160)
-engine.setProperty('volume', 1.0)
-
 def speak(text):
     print(f"[SPEAK] {text}")
-    engine.say(text)
-    engine.runAndWait()
+    tts = gTTS(text=text, lang='en', tld='co.uk')
+    tts.save("_tts_out.mp3")
+    speed = 1.25  
+    os.system(f'ffmpeg -y -i _tts_out.mp3 -filter:a "atempo={speed}" _tts_fast.mp3 -loglevel quiet')
+    play_mp3("_tts_fast.mp3")
 
+def play_mp3(filename):
+    pygame.mixer.init()
+    pygame.mixer.music.load(filename)
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy():
+        time.sleep(0.02)
 # ─── Audio ────────────────────────────────────────────────────
 def play_wav(filename):
     try:
-        import pygame
-        import time
         pygame.mixer.init()
         pygame.mixer.music.load(filename)
         pygame.mixer.music.play()
         while pygame.mixer.music.get_busy():
-            time.sleep(0.02)
+            time.sleep(0.01)
     except Exception as e:
         print(f"[AUDIO ERROR] {filename}: {e}")
 
@@ -33,13 +38,14 @@ SOUND_INCORRECT = "incorrect_simple_sfx5.wav"
 
 # ─── Lesson List ──────────────────────────────────────────────
 LESSONS = [
-    {"id": "intro",            "name": "Introduction to Senso"},
-    {"id": "alpha_aj",         "name": "Chapter 1, Lesson 1: The Alphabet, Letters A to J"},
-    {"id": "alpha_kt",         "name": "Chapter 1, Lesson 2: The Alphabet, Letters K to T"},
-    {"id": "alpha_uz",         "name": "Chapter 1, Lesson 3: The Alphabet, Letters U to Z"},
-    {"id": "practice_alpha",   "name": "Chapter 1, Lesson 4: Practice the Alphabet"},
-    {"id": "numbers",          "name": "Chapter 1, Lesson 5: Numbers 0 to 9"},
-    {"id": "practice_numbers", "name": "Chapter 1, Lesson 6: Practice Numbers 0 to 9"},
+    {"id": "intro",            "name": "Intro Chapter: Getting to know your tool"},
+    {"id": "alpha_aj",         "name": "Chapter 1, Lesson 1: Letters A to J"},
+    {"id": "alpha_kt",         "name": "Chapter 1, Lesson 2: Letters K to T"},
+    {"id": "alpha_uz",         "name": "Chapter 1, Lesson 3: Letters U to Z"},
+    {"id": "practice_alpha",   "name": "Chapter 1, Lesson 4: Practicing all the letters"},
+    {"id": "numbers",          "name": "Chapter 1, Lesson 5: Numbers 0 to 4"},
+    {"id": "numbers",          "name": "Chapter 1, Lesson 5: Numbers 5 to 9"},
+    {"id": "practice_numbers", "name": "Chapter 1, Lesson 6: Practicing all the numbers"},
 ]
 
 def lesson_name(idx):
@@ -103,15 +109,32 @@ BRAILLE_MAP = {
 }
 
 DOT_INSTRUCTIONS = {
-    'A':'dot 1',               'B':'dots 1 and 2',            'C':'dots 1 and 4',
-    'D':'dots 1, 4, and 5',    'E':'dots 1 and 5',            'F':'dots 1, 2, and 4',
-    'G':'dots 1, 2, 4, and 5', 'H':'dots 1, 2, and 5',        'I':'dots 2 and 4',
-    'J':'dots 2, 4, and 5',    'K':'dots 1 and 3',            'L':'dots 1, 2, and 3',
-    'M':'dots 1, 3, and 4',    'N':'dots 1, 3, 4, and 5',     'O':'dots 1, 3, and 5',
-    'P':'dots 1, 2, 3, and 4', 'Q':'dots 1, 2, 3, 4, and 5',  'R':'dots 1, 2, 3, and 5',
-    'S':'dots 2, 3, and 4',    'T':'dots 2, 3, 4, and 5',     'U':'dots 1, 3, and 6',
-    'V':'dots 1, 2, 3, and 6', 'W':'dots 2, 4, 5, and 6',     'X':'dots 1, 3, 4, and 6',
-    'Y':'dots 1, 3, 4, 5, and 6', 'Z':'dots 1, 3, 5, and 6',
+    'A': 'dot 1',
+    'B': 'dots 1 and 2',
+    'C': 'dots 1 and 4',
+    'D': 'dots 1, 4, and 5',
+    'E': 'dots 1 and 5',
+    'F': 'dots 1, 4, and 2',
+    'G': 'dots 1, 4, 2, and 5',
+    'H': 'dots 1, 2, and 5',
+    'I': 'dots 4 and 2',
+    'J': 'dots 4, 2, and 5',
+    'K': 'dots 1 and 3',
+    'L': 'dots 1, 2, and 3',
+    'M': 'dots 1, 4, and 3',
+    'N': 'dots 1, 4, 5, and 3',
+    'O': 'dots 1, 5, and 3',
+    'P': 'dots 1, 4, 2, and 3',
+    'Q': 'dots 1, 4, 2, 5, and 3',
+    'R': 'dots 1, 2, 5, and 3',
+    'S': 'dots 4, 2, and 3',
+    'T': 'dots 4, 2, 5, and 3',
+    'U': 'dots 1 and 3 and 6',
+    'V': 'dots 1, 2, 3, and 6',
+    'W': 'dots 4, 2, 5, and 6',
+    'X': 'dots 1, 4, 3, and 6',
+    'Y': 'dots 1, 4, 5, 3, and 6',
+    'Z': 'dots 1, 5, 3, and 6',
 }
 
 NUMBER_SIGN             = (0,0,1,1,1,1)
@@ -125,10 +148,16 @@ NUMBER_MAP = {
 }
 
 NUMBER_INSTRUCTIONS = {
-    '1':'dot 1',               '2':'dots 1 and 2',        '3':'dots 1 and 4',
-    '4':'dots 1, 4, and 5',    '5':'dots 1 and 5',        '6':'dots 1, 2, and 4',
-    '7':'dots 1, 2, 4, and 5', '8':'dots 1, 2, and 5',    '9':'dots 2 and 4',
-    '0':'dots 2, 4, and 5',
+    '1': 'dot 1',
+    '2': 'dots 1 and 2',
+    '3': 'dots 1 and 4',
+    '4': 'dots 1, 4, and 5',
+    '5': 'dots 1 and 5',
+    '6': 'dots 1, 4, and 2',
+    '7': 'dots 1, 4, 2, and 5',
+    '8': 'dots 1, 2, and 5',
+    '9': 'dots 4 and 2',
+    '0': 'dots 4, 2, and 5',
 }
 
 # ─── Input Helpers ────────────────────────────────────────────
@@ -140,15 +169,17 @@ def parse_dots(raw):
     return tuple(dots)
 
 def validate_dot_order(raw):
+    CORRECT_ORDER = '142536'
     digits = [ch for ch in raw if ch in '123456']
     if not digits:
-        return False, "No dots entered. Press your dot buttons then the square button to submit."
-    if digits != sorted(digits):
+        return False, "No braille buttons entered. Press the buttons on the circle buttons then the square button to submit."
+    correct_sequence = [d for d in CORRECT_ORDER if d in digits]
+    if digits != correct_sequence:
         play_wav(SOUND_INCORRECT)
-        return False, "Dots out of order. Press left column first: dots 1, 2, 3, then right column: dots 4, 5, 6."
+        return False, f"Your answer is close, but the buttons were pressed out of order. Try to press the buttons starting left to right. You pressed {', '.join(digits)}, try pressing them as {', '.join(correct_sequence)}."
     if len(digits) != len(set(digits)):
         play_wav(SOUND_INCORRECT)
-        return False, "You pressed the same dot more than once. Try again."
+        return False, "You pressed the same button more than once. Try again."
     return True, ""
 
 def get_dot_input(prompt, valid_commands=('ee',)):
@@ -163,7 +194,7 @@ def get_dot_input(prompt, valid_commands=('ee',)):
                 continue
             return raw
         play_wav(SOUND_INCORRECT)
-        speak("Invalid input. Press your dot buttons to enter an answer. Press the square button once to submit, or double press to return to the menu.")
+        speak("Invalid input. Press your circle braille buttons to enter an answer. Press the square button once to submit, or double press to return to the menu.")
 
 def get_menu_input(prompt):
     while True:
@@ -176,7 +207,7 @@ def get_menu_input(prompt):
 # ─── Menu ─────────────────────────────────────────────────────
 def show_menu(state, interrupted=False):
     if interrupted:
-        speak("Menu. Please select a lesson to start.")
+        speak("You are on the menu. Please select a lesson to start.")
     else:
         speak("Please select a lesson to start.")
 
@@ -198,7 +229,6 @@ def show_menu(state, interrupted=False):
                 speak(lesson_name(idx))
 
         elif raw == 'e':
-            speak(lesson_name(idx))
             play_wav(SOUND_LESSON)
             speak("Let's begin!")
             return idx
@@ -209,7 +239,7 @@ def lesson_end_prompt(current_idx, state):
     if next_idx >= len(LESSONS):
         speak("You have completed all lessons. Amazing work!")
         return 'menu'
-    speak(f"Great job! Up next: {lesson_name(next_idx)}. Press the square button to start, or double press to go back to the menu.")
+    speak(f"Great job! Up next: {lesson_name(next_idx)}. Press the square button to start, or double press the square to go back to the menu.")
     while True:
         raw = input("  [e=start next  ee=menu]: ").strip().lower()
         if raw in ('e', ''):
@@ -218,7 +248,7 @@ def lesson_end_prompt(current_idx, state):
             return 'menu'
         else:
             play_wav(SOUND_INCORRECT)
-            speak("Press the square button to start the next lesson, or double press to return to the menu.")
+            speak("Press the square button to start the next lesson, or double press the square to return to the menu.")
 
 # ─── Teach one symbol (learn mode — loops until correct) ──────
 def teach_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
@@ -416,7 +446,7 @@ def run_lesson(idx, state):
         if 'intro' not in state['completed_lessons']:
             state['completed_lessons'].append('intro')
         save_state(state)
-        speak("Introduction: Number labeling of the 6-cell grid.")
+        speak("Introduction: Learning the 6-cell grid.")
         return 'done'
     elif lesson_id == "alpha_aj":
         return run_letter_lesson("alpha_aj", list("ABCDEFGHIJ"), state)
@@ -437,7 +467,7 @@ def main():
     play_wav(SOUND_WELCOME)
 
     if state["first_time"]:
-        speak("Welcome to Senso!")
+        speak("Welcome to Senso! I'm your teacher, Sen . I will be guiding you through all your lessons. Let's get started.")
         state["first_time"] = False
         save_state(state)
     else:
