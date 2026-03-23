@@ -31,8 +31,8 @@ def play_wav(filename):
     except Exception as e:
         print(f"[AUDIO ERROR] {filename}: {e}")
 
-SOUND_WELCOME   = "loading_sfx1.wav"
-SOUND_LESSON    = "loading_sfx3.wav"
+SOUND_WELCOME   = "loading_sfx1_cut1.wav"
+SOUND_LESSON    = "loading_sfx3_cut1.wav"
 SOUND_CORRECT   = "correct_simple_sfx1.wav"
 SOUND_INCORRECT = "incorrect_simple_sfx5.wav"
 
