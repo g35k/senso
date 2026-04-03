@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import './App.css'
 import {
   fetchState,
@@ -7,8 +8,16 @@ import {
   postPress,
   setPiBaseUrl,
 } from './piApi.js'
+import HomePage from './pages/HomePage.jsx'
+import LessonDetailPage from './pages/LessonDetailPage.jsx'
+import LessonsPage from './pages/LessonsPage.jsx'
 
-function App() {
+function LessonDetailHtmlRedirect() {
+  const { search } = useLocation()
+  return <Navigate to={`/lesson${search}`} replace />
+}
+
+function PiQuizPage() {
   const [state, setState] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -262,5 +271,19 @@ function App() {
         {!state && !error && <p className="senso-loading">Loading…</p>}
       </section>
     </main>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/lessons" element={<LessonsPage />} />
+      <Route path="/lesson" element={<LessonDetailPage />} />
+      <Route path="/pi" element={<PiQuizPage />} />
+      <Route path="/index.html" element={<Navigate to="/" replace />} />
+      <Route path="/lessons.html" element={<Navigate to="/lessons" replace />} />
+      <Route path="/lesson-detail.html" element={<LessonDetailHtmlRedirect />} />
+    </Routes>
   )
 }
