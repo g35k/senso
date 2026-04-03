@@ -1,0 +1,288 @@
+.lessons-page-root *,
+.lessons-page-root *::before,
+.lessons-page-root *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.lessons-page-root {
+  --orange: #e8501a;
+  --blue: #3d6ec9;
+  --cream: #f2ede4;
+  --dark: #1a1a1a;
+  --white: #ffffff;
+  --light-gray: #f5f5f5;
+  --mid-gray: #e0ddd8;
+  font-family: 'Nunito', sans-serif;
+  background: var(--cream);
+  color: var(--dark);
+  min-height: 100vh;
+}
+
+.lessons-page-root .page-header {
+  background: var(--blue);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.lessons-page-root .header-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.lessons-page-root .header-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px 40px;
+}
+.lessons-page-root .back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lessons-page-root .back-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+.lessons-page-root .header-title {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 48px;
+  font-weight: 400;
+  color: white;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.lessons-page-root .header-sub {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.08em;
+}
+
+.lessons-page-root .progress-wrap {
+  background: white;
+  border-bottom: 1px solid var(--mid-gray);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+.lessons-page-root .progress-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #888;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.lessons-page-root .progress-track {
+  flex: 1;
+  height: 8px;
+  background: var(--mid-gray);
+  border-radius: 50px;
+  overflow: hidden;
+}
+.lessons-page-root .progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--orange);
+  border-radius: 50px;
+  transition: width 0.4s ease;
+}
+.lessons-page-root .progress-pct {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--orange);
+  min-width: 36px;
+  text-align: right;
+}
+
+.lessons-page-root .content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.lessons-page-root .chapter {
+  margin-bottom: 12px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid var(--mid-gray);
+  background: white;
+}
+
+.lessons-page-root .chapter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+  gap: 12px;
+}
+.lessons-page-root .chapter-header:hover {
+  background: #fafafa;
+}
+.lessons-page-root .chapter.open .chapter-header {
+  background: #fafafa;
+}
+
+.lessons-page-root .chapter-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+.lessons-page-root .chapter-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.lessons-page-root .chapter-title {
+  font-size: 15px;
+  font-weight: 510;
+  color: var(--dark);
+  font-family: 'Raleway', sans-serif;
+}
+.lessons-page-root .chapter-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #999;
+  margin-top: 2px;
+}
+
+.lessons-page-root .chapter-arrow {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.25s;
+}
+.lessons-page-root .chapter.open .chapter-arrow {
+  transform: rotate(180deg);
+}
+.lessons-page-root .chapter-arrow svg {
+  width: 14px;
+  height: 14px;
+  fill: white;
+}
+
+.lessons-page-root .lessons-list {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.lessons-page-root .chapter.open .lessons-list {
+  max-height: 800px;
+}
+
+.lessons-page-root .section-label {
+  padding: 12px 20px 4px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--orange);
+  border-top: 1px solid var(--mid-gray);
+  font-family: 'Raleway', sans-serif;
+}
+.lessons-page-root .section-label:first-child {
+  border-top: 1px solid var(--mid-gray);
+}
+
+.lessons-page-root .lesson-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px 11px 24px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+}
+.lessons-page-root .lesson-row:hover {
+  background: #fff8f5;
+  border-left-color: var(--orange);
+}
+.lessons-page-root .lesson-row.completed {
+  background: #f9fdf6;
+  border-left-color: #5cb85c;
+}
+.lessons-page-root .lesson-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--mid-gray);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: transparent;
+  transition: all 0.2s;
+}
+.lessons-page-root .lesson-row.completed .lesson-dot {
+  background: #5cb85c;
+  border-color: #5cb85c;
+  color: white;
+}
+.lessons-page-root .lesson-row:hover .lesson-dot {
+  border-color: var(--orange);
+}
+
+.lessons-page-root .lesson-text {
+  flex: 1;
+}
+.lessons-page-root .lesson-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark);
+  line-height: 1.3;
+  font-family: 'Raleway', sans-serif;
+}
+.lessons-page-root .lesson-row.completed .lesson-name {
+  color: #555;
+}
+.lessons-page-root .lesson-type {
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  margin-top: 1px;
+  letter-spacing: 0.04em;
+}
+.lessons-page-root .lesson-type.practice {
+  color: #3d6ec9;
+}
+.lessons-page-root .lesson-type.learn {
+  color: #e8501a;
+}

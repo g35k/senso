@@ -1,0 +1,405 @@
+.home-page .braille-e-cell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.09em;
+  vertical-align: middle;
+  margin: 0 0.15em 0 0.05em;
+  position: relative;
+  top: 0.2em;
+}
+.home-page .bd-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.09em;
+}
+.home-page .bd {
+  width: 0.14em;
+  height: 0.14em;
+  background: #111111;
+  border-radius: 50%;
+  display: block;
+}
+.home-page .bd-empty {
+  width: 0.14em;
+  height: 0.14em;
+  display: block;
+}
+
+.home-page *,
+.home-page *::before,
+.home-page *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.home-page {
+  --orange: #e8501a;
+  --blue: #3d6ec9;
+  --cream: #f2ede4;
+  --dark: #1a1a1a;
+  --white: #ffffff;
+  font-family: 'Nunito', sans-serif;
+  background: var(--cream);
+  color: var(--dark);
+  overflow-x: hidden;
+}
+
+.home-page nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  background: transparent;
+  transition: background 0.3s;
+}
+.home-page nav.scrolled {
+  background: rgba(232, 80, 26, 0.97);
+}
+.home-page .nav-logo {
+  font-family: 'Baloo 2', cursive;
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 0.05em;
+}
+.home-page .nav-account {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.home-page .nav-account:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+.home-page .nav-account svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+
+.home-page #hero {
+  min-height: 100vh;
+  background: var(--orange);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 80px 24px 60px;
+}
+
+.home-page .hero-canvas-wrap {
+  position: relative;
+  width: min(560px, 92vw);
+  height: min(380px, 62vw);
+  margin-bottom: 8px;
+}
+.home-page #heroCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.home-page .hero-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: clamp(72px, 18vw, 130px);
+  font-weight: 300;
+  color: #111111;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.home-page .hero-sub {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 18px 0 32px;
+  text-align: center;
+}
+
+.home-page .btn-begin {
+  background: var(--blue);
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  padding: 14px 44px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: transform 0.15s, background 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+.home-page .btn-begin:hover {
+  background: #2d5ab5;
+  transform: translateY(-2px);
+}
+.home-page .btn-begin:active {
+  transform: scale(0.97);
+}
+
+.home-page .scroll-hint {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  animation: home-bounce 2s infinite;
+}
+.home-page .scroll-hint::after {
+  content: '';
+  width: 1px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.3);
+}
+@keyframes home-bounce {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(6px);
+  }
+}
+
+.home-page #about {
+  background: var(--blue);
+  padding: 80px 24px;
+}
+.home-page .about-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .home-page .about-inner {
+    grid-template-columns: 1fr;
+  }
+}
+.home-page .device-photo {
+  border-radius: 20px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  background: #2a5ab0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.home-page .device-photo canvas {
+  border-radius: 16px;
+}
+.home-page .device-label {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 50px;
+}
+.home-page .about-text h2 {
+  font-family: 'Baloo 2', cursive;
+  font-size: 42px;
+  font-weight: 800;
+  color: white;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.home-page .about-text p {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.home-page #goal {
+  background: var(--cream);
+  padding: 80px 24px;
+  text-align: center;
+}
+.home-page .goal-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+.home-page .goal-tag {
+  display: inline-block;
+  background: var(--orange);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 5px 16px;
+  border-radius: 50px;
+  margin-bottom: 20px;
+}
+.home-page .goal-inner h2 {
+  font-family: 'Baloo 2', cursive;
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 800;
+  color: var(--dark);
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+.home-page .goal-inner p {
+  font-size: 17px;
+  font-weight: 700;
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+.home-page .goal-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 40px;
+}
+@media (max-width: 600px) {
+  .home-page .goal-cards {
+    grid-template-columns: 1fr;
+  }
+}
+.home-page .goal-card {
+  background: white;
+  border-radius: 18px;
+  padding: 28px 20px;
+  text-align: center;
+  border: 2px solid transparent;
+  transition: border 0.2s, transform 0.2s;
+}
+.home-page .goal-card:hover {
+  border-color: var(--orange);
+  transform: translateY(-4px);
+}
+.home-page .goal-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+.home-page .goal-card h3 {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--dark);
+  margin-bottom: 8px;
+}
+.home-page .goal-card p {
+  font-size: 13px;
+  font-weight: 700;
+  color: #777;
+  line-height: 1.5;
+}
+
+.home-page #purchase {
+  background: var(--orange);
+  padding: 80px 24px;
+  text-align: center;
+}
+.home-page #purchase h2 {
+  font-family: 'Baloo 2', cursive;
+  font-size: clamp(32px, 6vw, 56px);
+  font-weight: 800;
+  color: white;
+  margin-bottom: 14px;
+}
+.home-page #purchase p {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 36px;
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.home-page .price-tag {
+  font-family: 'Baloo 2', cursive;
+  font-size: 64px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+.home-page .price-sub {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 36px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.home-page .btn-purchase {
+  display: inline-block;
+  background: white;
+  color: var(--orange);
+  font-family: 'Nunito', sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  padding: 16px 52px;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: transform 0.15s, background 0.15s;
+  letter-spacing: 0.02em;
+}
+.home-page .btn-purchase:hover {
+  background: #fff0eb;
+  transform: translateY(-2px);
+}
+
+.home-page footer {
+  background: var(--dark);
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  padding: 28px 24px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.home-page footer span {
+  color: rgba(255, 255, 255, 0.7);
+}
