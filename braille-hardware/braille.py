@@ -58,12 +58,23 @@ def lesson_index_by_id(lesson_id):
     return 0
 
 # ─── State ────────────────────────────────────────────────────
-STATE_FILE = "user_state.json"
+STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "user_state.json")
 
 def load_state():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, 'r') as f:
-            return json.load(f)
+            s = json.load(f)
+        for k, v in (
+            ("api_target", "A"),
+            ("api_quiz_score", 0),
+            ("api_quiz_attempts", 0),
+            ("api_last_result", None),
+            ("api_last_decoded", None),
+            ("api_last_pattern", None),
+        ):
+            if k not in s:
+                s[k] = v
+        return s
     return {
         "first_time": True,
         "current_lesson": "intro",
@@ -73,6 +84,12 @@ def load_state():
         "total_attempts": 0,
         "total_correct": 0,
         "practice_results": [],
+        "api_target": "A",
+        "api_quiz_score": 0,
+        "api_quiz_attempts": 0,
+        "api_last_result": None,
+        "api_last_decoded": None,
+        "api_last_pattern": None,
     }
 
 def save_state(state):
