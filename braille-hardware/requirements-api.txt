@@ -1,4 +1,8 @@
+# Flask API — install on Mac or Pi:
+#   pip3 install -r requirements-api.txt
+#
+# RPi.GPIO does not install on macOS (Pi-only). For real GPIO on the Pi, also run:
+#   pip3 install -r requirements-api-pi.txt
+
 flask>=3.0
 flask-cors>=4.0
-# Install on Raspberry Pi only:
-RPi.GPIO>=0.7
