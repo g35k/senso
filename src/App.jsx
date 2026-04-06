@@ -11,6 +11,10 @@ import {
 import HomePage from './pages/HomePage.jsx'
 import LessonDetailPage from './pages/LessonDetailPage.jsx'
 import LessonsPage from './pages/LessonsPage.jsx'
+import LoginPage from './pages/LoginPage.jsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
+import CreateAccountPage from './pages/CreateAccountPage.jsx'
+import DashboardPage from './pages/DashboardPage.jsx'
 
 function LessonDetailHtmlRedirect() {
   const { search } = useLocation()
@@ -278,6 +282,10 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/create-account" element={<CreateAccountPage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/lessons" element={<LessonsPage />} />
       <Route path="/lesson" element={<LessonDetailPage />} />
       <Route path="/pi" element={<PiQuizPage />} />
