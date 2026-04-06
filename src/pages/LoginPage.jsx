@@ -1,17 +1,33 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { signInWithPassword } from '../auth/supabaseAuth.js'
 import '../components/AuthPages.css'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     document.title = 'SENSO — Log In'
   }, [])
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    navigate('/lessons')
+    setError(null)
+    setLoading(true)
+    try {
+      const { error: authError } = await signInWithPassword(email.trim(), password)
+      if (authError) {
+        setError(authError.message ?? 'Could not sign in.')
+        return
+      }
+      navigate('/lessons')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -27,17 +43,38 @@ export default function LoginPage() {
       <main className="auth-main">
         <section className="auth-card">
           <h1>Log In</h1>
+          {error ? (
+            <p className="auth-error" role="alert">
+              {error}
+            </p>
+          ) : null}
           <form className="auth-form" onSubmit={handleSubmit}>
             <label htmlFor="login-email">
               Email
-              <input id="login-email" type="email" placeholder="name@email.com" required />
+              <input
+                id="login-email"
+                type="email"
+                autoComplete="email"
+                placeholder="name@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </label>
             <label htmlFor="login-password">
               Password
-              <input id="login-password" type="password" placeholder="Password" required />
+              <input
+                id="login-password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </label>
-            <button type="submit" className="auth-btn">
-              Log In
+            <button type="submit" className="auth-btn" disabled={loading}>
+              {loading ? 'Signing in…' : 'Log In'}
             </button>
           </form>
           <div className="auth-links">

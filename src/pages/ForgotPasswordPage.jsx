@@ -1,18 +1,33 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { resetPasswordForEmail } from '../auth/supabaseAuth.js'
 import '../components/AuthPages.css'
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate()
+  const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     document.title = 'SENSO — Forgot Password'
   }, [])
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    setEmailSent(true)
+    setError(null)
+    setLoading(true)
+    try {
+      const { error: authError } = await resetPasswordForEmail(email.trim())
+      if (authError) {
+        setError(authError.message ?? 'Could not send reset email.')
+        return
+      }
+      setEmailSent(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -29,13 +44,26 @@ export default function ForgotPasswordPage() {
         <section className="auth-card">
           <h1>Forgot Password</h1>
           <p>Enter your email and we will send reset instructions.</p>
+          {error ? (
+            <p className="auth-error" role="alert">
+              {error}
+            </p>
+          ) : null}
           <form className="auth-form" onSubmit={handleSubmit}>
             <label htmlFor="forgot-email">
               Email
-              <input id="forgot-email" type="email" placeholder="name@email.com" required />
+              <input
+                id="forgot-email"
+                type="email"
+                autoComplete="email"
+                placeholder="name@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </label>
-            <button type="submit" className="auth-btn">
-              Send Email
+            <button type="submit" className="auth-btn" disabled={loading}>
+              {loading ? 'Sending…' : 'Send Email'}
             </button>
           </form>
         </section>

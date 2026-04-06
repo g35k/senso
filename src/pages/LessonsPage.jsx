@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { signOut } from '../auth/supabaseAuth.js'
 import '../components/LessonsPage.css'
 
 function getCompleted() {
@@ -42,6 +43,29 @@ export default function LessonsPage() {
           <Link to="/" className="back-btn">
             ← Back
           </Link>
+          <div className="header-actions">
+            <button
+              type="button"
+              className="profile-btn"
+              onClick={() => navigate('/profile')}
+              aria-label="Profile"
+              title="Profile"
+            >
+              <i className="fa-solid fa-user" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="logout-btn"
+              onClick={async () => {
+                await signOut()
+                navigate('/')
+              }}
+              aria-label="Log out"
+              title="Log out"
+            >
+              <i className="fa-solid fa-right-from-bracket" aria-hidden="true" />
+            </button>
+          </div>
           <div className="header-title">Lessons</div>
           <div className="header-sub">Choose a lesson to begin</div>
         </div>

@@ -181,6 +181,14 @@ export default function HomePage() {
         <Link to="/login" className="btn-begin">
           Sign In
         </Link>
+        <div className="hero-bypass">
+          <Link to="/lessons" className="btn-bypass btn-bypass-student">
+            Temporary student bypass
+          </Link>
+          <button type="button" className="btn-bypass btn-bypass-teacher" title="Coming soon">
+            Temporary teacher bypass
+          </button>
+        </div>
         <div className="scroll-hint">scroll</div>
       </section>
 

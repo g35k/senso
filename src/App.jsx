@@ -11,6 +11,7 @@ import {
 import HomePage from './pages/HomePage.jsx'
 import LessonDetailPage from './pages/LessonDetailPage.jsx'
 import LessonsPage from './pages/LessonsPage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import CreateAccountPage from './pages/CreateAccountPage.jsx'
@@ -287,6 +288,7 @@ export default function App() {
       <Route path="/create-account" element={<CreateAccountPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/lessons" element={<LessonsPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
       <Route path="/lesson" element={<LessonDetailPage />} />
       <Route path="/pi" element={<PiQuizPage />} />
       <Route path="/index.html" element={<Navigate to="/" replace />} />

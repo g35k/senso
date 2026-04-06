@@ -166,6 +166,23 @@
   background: #2d5ab5;
 }
 
+.auth-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.auth-error {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(232, 80, 26, 0.1);
+  border: 1px solid rgba(232, 80, 26, 0.35);
+  color: #8a3412;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .auth-links {
   margin-top: 16px;
   display: flex;
