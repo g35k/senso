@@ -25,3 +25,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Braille hardware - local user progress (avoids merge conflicts)
+braille-hardware/user_state.json
