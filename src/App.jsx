@@ -14,6 +14,7 @@ import LessonsPage from './pages/LessonsPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 import CreateAccountPage from './pages/CreateAccountPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
@@ -286,6 +287,7 @@ export default function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/create-account" element={<CreateAccountPage />} />
       <Route
         path="/dashboard"

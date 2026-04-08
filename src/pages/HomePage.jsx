@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import * as THREE from 'three'
 import '../components/HomePage.css'
 
@@ -7,9 +7,24 @@ const W = 560
 const H = 380
 
 export default function HomePage() {
+  const location = useLocation()
   const rootRef = useRef(null)
   const heroCanvasRef = useRef(null)
   const [imgModalOpen, setImgModalOpen] = useState(false)
+
+  const authCode = new URLSearchParams(location.search).get('code')
+  if (authCode) {
+    return <Navigate to={`/login${location.search}`} replace />
+  }
+  const hash = location.hash
+  if (hash && /access_token|refresh_token|type=/.test(hash)) {
+    const hashPart = hash.startsWith('#') ? hash.slice(1) : hash
+    const linkType = new URLSearchParams(hashPart).get('type')
+    if (linkType === 'recovery') {
+      return <Navigate to={{ pathname: '/reset-password', hash: hashPart }} replace />
+    }
+    return <Navigate to={{ pathname: '/login', hash: hashPart }} replace />
+  }
 
   useEffect(() => {
     document.title = 'SENSO — Learn Braille'

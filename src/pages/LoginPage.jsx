@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { fetchProfile, signInWithPassword } from '../auth/supabaseAuth.js'
+import {
+  exchangeSessionFromEmailRedirect,
+  fetchProfile,
+  signInWithPassword,
+} from '../auth/supabaseAuth.js'
+import { getSupabaseClient } from '../lib/supabaseClient.js'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import '../components/AuthPages.css'
 
@@ -15,6 +20,49 @@ export default function LoginPage() {
   useEffect(() => {
     document.title = 'SENSO — Log In'
   }, [])
+
+  // Email magic links: ?code= (PKCE) or hash tokens — land on /login, then clean the URL
+  useEffect(() => {
+    let cancelled = false
+
+    async function handleEmailLink() {
+      const rawRecovery = window.location.hash.replace(/^#/, '')
+      if (rawRecovery) {
+        const linkType = new URLSearchParams(rawRecovery).get('type')
+        if (linkType === 'recovery') {
+          navigate({ pathname: '/reset-password', hash: rawRecovery }, { replace: true })
+          return
+        }
+      }
+
+      const { error: pkceError, exchanged } = await exchangeSessionFromEmailRedirect()
+      if (cancelled) return
+      if (pkceError) {
+        setError(pkceError.message ?? 'This sign-in link is invalid or expired.')
+        return
+      }
+      if (exchanged) {
+        window.history.replaceState(null, '', '/login')
+        navigate('/login', { replace: true })
+        return
+      }
+
+      const rawHash = window.location.hash.replace(/^#/, '')
+      if (!rawHash || !/(access_token|refresh_token|type=)/.test(rawHash)) return
+
+      const supabase = getSupabaseClient()
+      if (!supabase) return
+      await supabase.auth.getSession()
+      if (cancelled) return
+      window.history.replaceState(null, '', '/login')
+      navigate('/login', { replace: true })
+    }
+
+    void handleEmailLink()
+    return () => {
+      cancelled = true
+    }
+  }, [navigate])
 
   useEffect(() => {
     if (authLoading || !user || !profile) return

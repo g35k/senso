@@ -29,6 +29,8 @@ export function getSupabaseClient() {
         storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
         persistSession: true,
         autoRefreshToken: true,
+        // Parse #access_token / recovery fragments from email magic links
+        detectSessionInUrl: true,
       },
     })
   }

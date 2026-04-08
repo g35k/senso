@@ -193,6 +193,13 @@ button.auth-back-btn {
   line-height: 1.45;
 }
 
+.auth-hint {
+  margin: 0 0 16px;
+  color: #5d5a52;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
 .auth-links {
   margin-top: 16px;
   display: flex;
