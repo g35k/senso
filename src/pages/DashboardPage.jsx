@@ -1,11 +1,21 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext.jsx'
 import '../components/AuthPages.css'
 
 export default function DashboardPage() {
+  const navigate = useNavigate()
+  const { signOut } = useAuth()
+
   useEffect(() => {
     document.title = 'SENSO — Dashboard'
   }, [])
+
+  async function handleLogout() {
+    sessionStorage.removeItem('senso_student_bypass')
+    await signOut()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <div className="auth-page">
@@ -13,9 +23,9 @@ export default function DashboardPage() {
         <Link to="/" className="auth-logo">
           senso
         </Link>
-        <Link to="/login" className="auth-back">
+        <button type="button" className="auth-back auth-back-btn" onClick={handleLogout}>
           Log out
-        </Link>
+        </button>
       </nav>
       <main className="dashboard-shell">
         <h1>Dashboard</h1>

@@ -8,6 +8,7 @@ export default function CreateAccountPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [role, setRole] = useState('student')
   const [accountEmailSent, setAccountEmailSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -25,6 +26,7 @@ export default function CreateAccountPage() {
         email: email.trim(),
         password,
         fullName: fullName.trim() || undefined,
+        role,
       })
       if (authError) {
         setError(authError.message ?? 'Could not create account.')
@@ -90,6 +92,17 @@ export default function CreateAccountPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+            </label>
+            <label htmlFor="create-role">
+              Account type
+              <select
+                id="create-role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+              </select>
             </label>
             <button type="submit" className="auth-btn" disabled={loading}>
               {loading ? 'Creating…' : 'Create Account'}

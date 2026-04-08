@@ -16,6 +16,7 @@ import LoginPage from './pages/LoginPage.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import CreateAccountPage from './pages/CreateAccountPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
+import RequireAuth from './components/RequireAuth.jsx'
 
 function LessonDetailHtmlRedirect() {
   const { search } = useLocation()
@@ -286,10 +287,38 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/create-account" element={<CreateAccountPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/lessons" element={<LessonsPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/lesson" element={<LessonDetailPage />} />
+      <Route
+        path="/dashboard"
+        element={
+          <RequireAuth roles={['teacher']}>
+            <DashboardPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/lessons"
+        element={
+          <RequireAuth roles={['student']}>
+            <LessonsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <RequireAuth roles={['student']}>
+            <ProfilePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/lesson"
+        element={
+          <RequireAuth roles={['student']}>
+            <LessonDetailPage />
+          </RequireAuth>
+        }
+      />
       <Route path="/pi" element={<PiQuizPage />} />
       <Route path="/index.html" element={<Navigate to="/" replace />} />
       <Route path="/lessons.html" element={<Navigate to="/lessons" replace />} />

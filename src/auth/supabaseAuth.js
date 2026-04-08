@@ -21,9 +21,23 @@ export async function signInWithPassword(email, password) {
 }
 
 /**
- * @param {{ email: string, password: string, fullName?: string }} params
+ * Load public.profiles row for the signed-in user (RLS: own row only).
+ * @param {string} userId
  */
-export async function signUp({ email, password, fullName }) {
+export async function fetchProfile(userId) {
+  const supabase = getSupabaseClient()
+  if (!supabase) return notConfiguredResult()
+  return supabase
+    .from('profiles')
+    .select('user_id, email, role')
+    .eq('user_id', userId)
+    .maybeSingle()
+}
+
+/**
+ * @param {{ email: string, password: string, fullName?: string, role: 'student' | 'teacher' }} params
+ */
+export async function signUp({ email, password, fullName, role }) {
   const supabase = getSupabaseClient()
   if (!supabase) return notConfiguredResult()
   const redirectTo =
@@ -32,7 +46,10 @@ export async function signUp({ email, password, fullName }) {
     email,
     password,
     options: {
-      data: fullName ? { full_name: fullName } : {},
+      data: {
+        role,
+        ...(fullName ? { full_name: fullName } : {}),
+      },
       emailRedirectTo: redirectTo,
     },
   })

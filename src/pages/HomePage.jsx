@@ -182,7 +182,11 @@ export default function HomePage() {
           Sign In
         </Link>
         <div className="hero-bypass">
-          <Link to="/lessons" className="btn-bypass btn-bypass-student">
+          <Link
+            to="/lessons"
+            className="btn-bypass btn-bypass-student"
+            onClick={() => sessionStorage.setItem('senso_student_bypass', '1')}
+          >
             Temporary student bypass
           </Link>
           <button type="button" className="btn-bypass btn-bypass-teacher" title="Coming soon">

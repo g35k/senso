@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { signInWithPassword } from '../auth/supabaseAuth.js'
+import { fetchProfile, signInWithPassword } from '../auth/supabaseAuth.js'
+import { useAuth } from '../contexts/AuthContext.jsx'
 import '../components/AuthPages.css'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { user, profile, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -14,17 +16,38 @@ export default function LoginPage() {
     document.title = 'SENSO — Log In'
   }, [])
 
+  useEffect(() => {
+    if (authLoading || !user || !profile) return
+    sessionStorage.removeItem('senso_student_bypass')
+    navigate(profile.role === 'teacher' ? '/dashboard' : '/lessons', { replace: true })
+  }, [authLoading, user, profile, navigate])
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
     setLoading(true)
     try {
-      const { error: authError } = await signInWithPassword(email.trim(), password)
+      const { data, error: authError } = await signInWithPassword(email.trim(), password)
       if (authError) {
         setError(authError.message ?? 'Could not sign in.')
         return
       }
-      navigate('/lessons')
+      const uid = data?.user?.id
+      if (!uid) {
+        setError('Signed in but no user id returned.')
+        return
+      }
+      sessionStorage.removeItem('senso_student_bypass')
+      const { data: prof, error: profileError } = await fetchProfile(uid)
+      if (profileError) {
+        setError(profileError.message ?? 'Could not load your profile.')
+        return
+      }
+      if (!prof?.role) {
+        setError('Profile not found. Ask an admin to finish account setup.')
+        return
+      }
+      navigate(prof.role === 'teacher' ? '/dashboard' : '/lessons')
     } finally {
       setLoading(false)
     }
@@ -73,7 +96,7 @@ export default function LoginPage() {
                 required
               />
             </label>
-            <button type="submit" className="auth-btn" disabled={loading}>
+            <button type="submit" className="auth-btn" disabled={loading || authLoading}>
               {loading ? 'Signing in…' : 'Log In'}
             </button>
           </form>

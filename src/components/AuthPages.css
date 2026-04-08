@@ -33,6 +33,14 @@
   font-weight: 700;
 }
 
+button.auth-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
 .auth-main {
   min-height: calc(100vh - 78px);
   display: flex;
@@ -139,13 +147,15 @@
   font-weight: 700;
 }
 
-.auth-form input {
+.auth-form input,
+.auth-form select {
   height: 44px;
   border-radius: 12px;
   border: 1px solid #d7d2c8;
   padding: 0 12px;
   font-size: 15px;
   font-family: inherit;
+  background: #fff;
 }
 
 .auth-btn {

@@ -24,7 +24,13 @@ export function isSupabaseConfigured() {
 export function getSupabaseClient() {
   if (!isSupabaseConfigured()) return null
   if (!client) {
-    client = createClient(url, anonKey)
+    client = createClient(url, anonKey, {
+      auth: {
+        storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    })
   }
   return client
 }

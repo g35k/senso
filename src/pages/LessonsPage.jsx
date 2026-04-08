@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { signOut } from '../auth/supabaseAuth.js'
+import { useAuth } from '../contexts/AuthContext.jsx'
 import '../components/LessonsPage.css'
 
 function getCompleted() {
@@ -13,6 +13,7 @@ function getCompleted() {
 
 export default function LessonsPage() {
   const navigate = useNavigate()
+  const { signOut } = useAuth()
   const [open, setOpen] = useState({})
   const completed = getCompleted()
 
@@ -57,8 +58,9 @@ export default function LessonsPage() {
               type="button"
               className="logout-btn"
               onClick={async () => {
+                sessionStorage.removeItem('senso_student_bypass')
                 await signOut()
-                navigate('/')
+                navigate('/login', { replace: true })
               }}
               aria-label="Log out"
               title="Log out"
