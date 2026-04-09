@@ -1,27 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { lessonChapters } from '../data/lessonChapters.js'
+import { getChapterSummary, getLessonStat, recordBestAccuracy } from '../lib/lessonProgressStorage.js'
+import { fetchState } from '../piApi.js'
 import '../components/LessonDetailPage.css'
-
-const circumference = 289
-
-function getCompleted() {
-  try {
-    return JSON.parse(sessionStorage.getItem('completed') || '[]')
-  } catch {
-    return []
-  }
-}
-
-function saveCompleted(arr) {
-  sessionStorage.setItem('completed', JSON.stringify(arr))
-}
-
-function setArc(el, pct) {
-  if (!el) return
-  const offset = circumference - (pct / 100) * circumference
-  el.setAttribute('stroke-dashoffset', String(offset))
-}
 
 export default function LessonDetailPage() {
   const [searchParams] = useSearchParams()
@@ -30,173 +12,186 @@ export default function LessonDetailPage() {
   const lessonId = searchParams.get('lesson') || 'ch1-1'
 
   const chapter = lessonChapters[chapterId] ?? lessonChapters.ch1
-  const lesson = chapter.lessons.find((l) => l.id === lessonId) ?? chapter.lessons[0]
+  const lesson =
+    chapter.lessons.find((l) => l.id === lessonId) ?? chapter.lessons[0]
 
-  const [statsTick, setStatsTick] = useState(0)
-  const completedList = getCompleted()
-  const completionArcRef = useRef(null)
-  const accuracyArcRef = useRef(null)
+  const [tick, setTick] = useState(0)
+  const [deviceOk, setDeviceOk] = useState(null)
+
+  const summary = getChapterSummary(chapter.lessons)
+
+  const refresh = useCallback(() => setTick((n) => n + 1), [])
 
   useEffect(() => {
-    document.title = 'SENSO — ' + lesson.title
-  }, [lesson.title])
+    document.title = `SENSO — ${chapter.label}`
+  }, [chapter.label])
 
   useEffect(() => {
-    const ch = lessonChapters[chapterId] ?? lessonChapters.ch1
-    const completed = getCompleted()
-    const chLessons = ch.lessons.map((l) => l.id)
-    const donePct = Math.round(
-      (chLessons.filter((id) => completed.includes(id)).length / chLessons.length) * 100,
-    )
-    const t1 = setTimeout(() => setArc(completionArcRef.current, donePct), 100)
+    let cancelled = false
+    let timer
 
-    const seed = lesson.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-    let t2
-    if (completed.includes(lesson.id)) {
-      const acc = 60 + (seed % 36)
-      t2 = setTimeout(() => setArc(accuracyArcRef.current, acc), 200)
-    } else {
-      setArc(accuracyArcRef.current, 0)
+    async function poll() {
+      try {
+        const state = await fetchState()
+        if (cancelled) return
+        setDeviceOk(true)
+        const attempts = state.attempts ?? 0
+        const score = state.score ?? 0
+        if (attempts > 0) {
+          const pct = Math.min(100, Math.round((score / attempts) * 100))
+          const { improved } = recordBestAccuracy(lesson.id, pct)
+          if (improved) refresh()
+        }
+      } catch {
+        if (!cancelled) {
+          setDeviceOk(false)
+        }
+      }
+      timer = window.setTimeout(poll, 2000)
     }
 
+    poll()
     return () => {
-      clearTimeout(t1)
-      if (t2) clearTimeout(t2)
+      cancelled = true
+      clearTimeout(timer)
     }
-  }, [chapterId, lesson.id, statsTick])
+  }, [lesson.id, refresh])
 
-  const alreadyDone = completedList.includes(lesson.id)
-  const accuracyDisplay = alreadyDone
-    ? `${60 + (lesson.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 36)}%`
-    : '—'
-
-  function markCurrentDone() {
-    const completed = getCompleted()
-    if (!completed.includes(lesson.id)) {
-      completed.push(lesson.id)
-      saveCompleted(completed)
-    }
-    setStatsTick((n) => n + 1)
-  }
-
-  function goLesson(id) {
+  function selectLesson(id) {
     navigate(`/lesson?chapter=${chapterId}&lesson=${id}`)
   }
 
   return (
-    <div className="lesson-detail-page-root">
-      <nav>
-        <Link to="/lessons" className="nav-back">
-          ← Lessons
+    <div className="lesson-detail-v2">
+      <header className="lesson-v2-nav">
+        <Link to="/lessons" className="lesson-v2-back">
+          ← All lessons
         </Link>
-        <div className="nav-logo">senso</div>
-        <div style={{ width: 80 }} />
-      </nav>
+        <span className="lesson-v2-brand">senso</span>
+        <span className="lesson-v2-nav-spacer" />
+      </header>
 
-      <div className="hero-card" id="heroCard">
-        <div className="hero-left">
-          <div className={`lesson-tag ${lesson.type === 'practice' ? 'practice-tag' : ''}`}>
-            {lesson.type === 'practice' ? 'Practice' : 'Learn'}
+      <main className="lesson-v2-main">
+        <section className="lesson-v2-chapter-card" aria-labelledby="chapter-heading">
+          <p className="lesson-v2-eyebrow">Your chapter</p>
+          <h1 id="chapter-heading" className="lesson-v2-chapter-title">
+            {chapter.label}
+          </h1>
+          <p className="lesson-v2-chapter-sub">
+            Follow along on your SENSO. This screen shows how you are doing.
+          </p>
+
+          <div className="lesson-v2-summary-row" role="group" aria-label="Chapter scores">
+            <div className="lesson-v2-summary-pill">
+              <span className="lesson-v2-summary-label">Lessons finished</span>
+              <span className="lesson-v2-summary-value">
+                {summary.done}
+                <span className="lesson-v2-summary-of"> / {summary.total}</span>
+              </span>
+            </div>
+            <div className="lesson-v2-summary-pill lesson-v2-summary-pill-accent">
+              <span className="lesson-v2-summary-label">Chapter score</span>
+              <span className="lesson-v2-summary-value">
+                {summary.avgAccuracy != null ? `${summary.avgAccuracy}%` : '—'}
+              </span>
+            </div>
           </div>
-          <h1 className="hero-title">{lesson.title}</h1>
-          <p className="hero-desc">{lesson.desc}</p>
-          <p className="hero-instructions">{lesson.instructions}</p>
-          <button
-            type="button"
-            className="btn-start"
-            id="heroStartBtn"
-            onClick={markCurrentDone}
-            style={alreadyDone ? { background: '#5cb85c' } : undefined}
+
+          <div
+            className="lesson-v2-chapter-bar"
+            role="progressbar"
+            aria-valuenow={summary.completionPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
           >
-            {alreadyDone ? 'COMPLETED ✓' : 'complete'}
-          </button>
-        </div>
-        <div className="hero-stats">
-          <div className="stat-circle" id="circleCompletion">
-            <svg viewBox="0 0 110 110">
-              <circle className="track" cx="55" cy="55" r="46" />
-              <circle
-                ref={completionArcRef}
-                className="fill-orange"
-                id="completionArc"
-                cx="55"
-                cy="55"
-                r="46"
-                strokeDasharray="289"
-                strokeDashoffset="289"
-              />
-            </svg>
-            <div className="stat-inner">
-              <div className="stat-pct" id="completionPct">
-                {Math.round(
-                  (chapter.lessons.filter((l) => completedList.includes(l.id)).length /
-                    chapter.lessons.length) *
-                    100,
-                )}
-                %
-              </div>
-              <div className="stat-label">
-                chapter
-                <br />
-                completion
-              </div>
-            </div>
-          </div>
-          <div className="stat-circle">
-            <svg viewBox="0 0 110 110">
-              <circle className="track" cx="55" cy="55" r="46" />
-              <circle
-                ref={accuracyArcRef}
-                className="fill-blue"
-                id="accuracyArc"
-                cx="55"
-                cy="55"
-                r="46"
-                strokeDasharray="289"
-                strokeDashoffset="289"
-              />
-            </svg>
-            <div className="stat-inner">
-              <div className="stat-pct" id="accuracyPct">
-                {accuracyDisplay}
-              </div>
-              <div className="stat-label">accuracy</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="section-title" id="chapterLabel">
-        {chapter.label}
-      </div>
-      <div className="lessons-grid" id="lessonsGrid">
-        {chapter.lessons.map((l) => {
-          const isDone = completedList.includes(l.id)
-          const isActive = l.id === lesson.id
-          return (
             <div
-              key={l.id}
-              className={`lesson-card ${isActive ? 'active' : ''} ${isDone ? 'completed-card' : ''}`}
-              onClick={() => goLesson(l.id)}
-              role="presentation"
-            >
-              <div className="card-num">{l.num}</div>
-              <div className="card-title">{l.title}</div>
-              <div className="card-desc">{l.desc}</div>
-              <button
-                type="button"
-                className={`card-btn ${isDone ? 'done-btn' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  goLesson(l.id)
-                }}
-              >
-                {isDone ? 'DONE ✓' : 'START'}
-              </button>
+              className="lesson-v2-chapter-bar-fill"
+              style={{ width: `${summary.completionPct}%` }}
+            />
+          </div>
+          <p className="lesson-v2-chapter-bar-caption">
+            {summary.completionPct}% of this chapter done
+          </p>
+        </section>
+
+        <section className="lesson-v2-device" aria-label="Device connection">
+          <div className="lesson-v2-device-inner">
+            <span
+              className={`lesson-v2-device-dot ${deviceOk ? 'on' : deviceOk === false ? 'off' : ''}`}
+              aria-hidden
+            />
+            <div>
+              <p className="lesson-v2-device-title">
+                {deviceOk === true
+                  ? 'SENSO is connected'
+                  : deviceOk === false
+                    ? 'SENSO not connected'
+                    : 'Checking your SENSO…'}
+              </p>
+              <p className="lesson-v2-device-text">
+                Press the square button on your device to start the lesson. Your score updates here
+                while you practice.
+              </p>
             </div>
-          )
-        })}
-      </div>
+          </div>
+        </section>
+
+        <section className="lesson-v2-lessons-section" aria-labelledby="lessons-heading">
+          <h2 id="lessons-heading" className="lesson-v2-tiles-heading">
+            Lessons
+          </h2>
+          <div className="lesson-v2-tile-grid">
+            {chapter.lessons.map((l, index) => {
+              const stat = getLessonStat(l.id)
+              const active = l.id === lesson.id
+              const displayAcc = stat.bestAccuracy
+              const accText =
+                displayAcc != null && displayAcc > 0 ? `${displayAcc}%` : '—'
+
+              function onTileKeyDown(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  selectLesson(l.id)
+                }
+              }
+
+              return (
+                <div
+                  key={l.id}
+                  className={`lesson-v2-tile ${active ? 'lesson-v2-tile-active' : ''} ${stat.completed ? 'lesson-v2-tile-complete' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => selectLesson(l.id)}
+                  onKeyDown={onTileKeyDown}
+                  aria-current={active ? 'true' : undefined}
+                  aria-label={`Lesson ${index + 1}: ${l.title}`}
+                >
+                  <div className="lesson-v2-tile-top">
+                    <span className="lesson-v2-tile-num">{index + 1}</span>
+                    <span
+                      className={`lesson-v2-tile-type ${l.type === 'practice' ? 'is-practice' : ''}`}
+                    >
+                      {l.type === 'practice' ? 'Practice' : 'Learn'}
+                    </span>
+                  </div>
+                  <h3 className="lesson-v2-tile-title">{l.title}</h3>
+                  <p className="lesson-v2-tile-desc">{l.desc}</p>
+                  <div className="lesson-v2-tile-best">
+                    <span className="lesson-v2-tile-best-label">Your best</span>
+                    <span className="lesson-v2-tile-best-pct">{accText}</span>
+                  </div>
+                  <span
+                    className={`lesson-v2-tile-status ${stat.completed ? 'is-done' : 'is-pending'}`}
+                    aria-hidden
+                  >
+                    {stat.completed ? 'Done ✓' : 'Not finished'}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      </main>
     </div>
   )
 }
