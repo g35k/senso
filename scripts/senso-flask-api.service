@@ -1,0 +1,27 @@
+# Senso Flask API on Raspberry Pi (systemd)
+#
+# 1. Copy to the Pi and adjust paths/username if needed:
+#    sudo cp senso-flask-api.service /etc/systemd/system/
+# 2: sudo systemctl daemon-reload
+# 3: sudo systemctl enable --now senso-flask-api.service
+# 4: sudo systemctl status senso-flask-api
+#
+# Logs: journalctl -u senso-flask-api -f
+
+[Unit]
+Description=Senso Flask API (braille-hardware app.py)
+After=network.target
+
+[Service]
+Type=simple
+User=senso
+Group=senso
+WorkingDirectory=/home/senso
+Environment=PORT=5001
+Environment=SENSO_ENTER_GPIO=23
+ExecStart=/home/senso/flask-test-venv/bin/python /home/senso/app.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

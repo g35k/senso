@@ -218,6 +218,19 @@ function PiQuizPage() {
               </div>
             </dl>
 
+            {state.feedback && (
+              <p className="senso-result bad" role="status">
+                {state.feedback}
+              </p>
+            )}
+
+            {state.pending_dots?.length > 0 && (
+              <p className="senso-hint">
+                Queued dots (device submit sends this):{' '}
+                <strong>{state.pending_dots.join(' → ')}</strong>
+              </p>
+            )}
+
             {state.last_result && (
               <p
                 className={
@@ -253,7 +266,7 @@ function PiQuizPage() {
                 onClick={handlePress}
                 disabled={loading}
               >
-                Submit (read keys)
+                Submit (web — or use device submit)
               </button>
               <button
                 type="button"

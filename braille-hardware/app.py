@@ -5,6 +5,8 @@ Quiz + lesson snapshot live in user_state.json (same file as braille.py) — no 
 
 Run on the Pi:  python app.py
 Default port 5001 (macOS AirPlay often uses 5000). Override: PORT=5000 python app.py
+Submit GPIO: BCM pin 23 by default (square / send). Override: SENSO_ENTER_GPIO=19
+Dot entry matches braille.py: press dots in 1→4→2→5→3→6 order for your selection, then submit.
 Dependencies:  pip install flask flask-cors RPi.GPIO
 """
 
@@ -14,6 +16,7 @@ import json
 import os
 import random
 import threading
+import time
 from typing import Any
 
 from flask import Flask, jsonify
@@ -70,11 +73,21 @@ def _lesson_title(lesson_id: str) -> str:
 
 
 DOT_GPIO: dict[int, int] = {1: 17, 2: 27, 3: 22, 4: 5, 5: 6, 6: 13}
-ENTER_GPIO = 19
+ENTER_GPIO = int(os.environ.get("SENSO_ENTER_GPIO", "23"))
+
+# Same ordering rule as braille.py validate_dot_order
+_CORRECT_DOT_ORDER = "142536"
 
 _GPIO_LOCK = threading.Lock()
 _STATE_LOCK = threading.Lock()
+_SEQUENCE_LOCK = threading.Lock()
+_COMMIT_LOCK = threading.Lock()
 _GPIO_READY = False
+
+# Dots pressed since last submit (1–6), in press order; cleared on submit or /next
+_DOT_SEQUENCE: list[int] = []
+_DEBOUNCE_S = 0.18
+_EDGE_TIMES: dict[Any, float] = {}
 
 
 def _default_user_state() -> dict[str, Any]:
@@ -93,6 +106,7 @@ def _default_user_state() -> dict[str, Any]:
         "api_last_result": None,
         "api_last_decoded": None,
         "api_last_pattern": None,
+        "api_feedback": None,
     }
 
 
@@ -144,6 +158,140 @@ def read_dot_pattern() -> tuple[int, int, int, int, int, int]:
     return (out[0], out[1], out[2], out[3], out[4], out[5])
 
 
+def _debounce(key: Any) -> bool:
+    t = time.monotonic()
+    if t - _EDGE_TIMES.get(key, 0.0) < _DEBOUNCE_S:
+        return False
+    _EDGE_TIMES[key] = t
+    return True
+
+
+def _validate_dot_order(raw: str) -> tuple[bool, str]:
+    digits = [ch for ch in raw if ch in "123456"]
+    if not digits:
+        return False, (
+            "No braille buttons entered. Press the circle buttons, then the submit button to send."
+        )
+    correct_sequence = [d for d in _CORRECT_DOT_ORDER if d in digits]
+    if digits != correct_sequence:
+        return False, (
+            "Your answer is close, but the buttons were pressed out of order. "
+            "Press them in left-to-right cell order (1, then 4, then 2, then 5, then 3, then 6) "
+            f"for the dots you want. You pressed {', '.join(digits)}, "
+            f"try: {', '.join(correct_sequence)}."
+        )
+    if len(digits) != len(set(digits)):
+        return False, "You pressed the same button more than once. Try again."
+    return True, ""
+
+
+def _parse_dots(raw: str) -> tuple[int, int, int, int, int, int]:
+    dots = [0, 0, 0, 0, 0, 0]
+    for ch in raw:
+        if ch in "123456":
+            dots[int(ch) - 1] = 1
+    return (dots[0], dots[1], dots[2], dots[3], dots[4], dots[5])
+
+
+def _snapshot_pending() -> list[int]:
+    with _SEQUENCE_LOCK:
+        return list(_DOT_SEQUENCE)
+
+
+def _apply_press_from_sequence(
+    s: dict[str, Any],
+    seq: list[int],
+    *,
+    use_snapshot_fallback: bool,
+) -> None:
+    s["api_feedback"] = None
+    pattern: tuple[int, int, int, int, int, int]
+
+    if len(seq) > 0:
+        raw = "".join(str(d) for d in seq)
+        valid, err = _validate_dot_order(raw)
+        if not valid:
+            s["api_feedback"] = err
+            s["api_last_result"] = None
+            s["api_last_decoded"] = None
+            s["api_last_pattern"] = None
+            return
+        pattern = _parse_dots(raw)
+    elif use_snapshot_fallback:
+        pattern = read_dot_pattern()
+    else:
+        s["api_feedback"] = (
+            "No braille buttons entered. Press the dots you want (in 1→4→2→5→3→6 order), "
+            "then press the submit button on the device to send."
+        )
+        s["api_last_result"] = None
+        s["api_last_decoded"] = None
+        s["api_last_pattern"] = None
+        return
+
+    s["api_last_pattern"] = list(pattern)
+    letter = BRAILLE_MAP.get(pattern)
+    s["api_last_decoded"] = letter
+
+    s["api_quiz_attempts"] = int(s.get("api_quiz_attempts", 0)) + 1
+    s["total_attempts"] = int(s.get("total_attempts", 0)) + 1
+
+    target = s.get("api_target", "A")
+    if letter is None:
+        s["api_last_result"] = "incorrect"
+        correct = False
+    else:
+        correct = letter == target
+        s["api_last_result"] = "correct" if correct else "incorrect"
+        if correct:
+            s["api_quiz_score"] = int(s.get("api_quiz_score", 0)) + 1
+            s["total_correct"] = int(s.get("total_correct", 0)) + 1
+
+    if "practice_results" not in s:
+        s["practice_results"] = []
+    s["practice_results"].append({"symbol": target, "correct": correct})
+
+
+def _gpio_commit_submit() -> None:
+    with _COMMIT_LOCK:
+        with _SEQUENCE_LOCK:
+            seq = list(_DOT_SEQUENCE)
+            _DOT_SEQUENCE.clear()
+        with _STATE_LOCK:
+            s = load_user_state()
+            _apply_press_from_sequence(s, seq, use_snapshot_fallback=False)
+            save_user_state(s)
+
+
+def _gpio_input_loop() -> None:
+    import RPi.GPIO as GPIO  # type: ignore[import-untyped]
+
+    prev_dots = {d: False for d in range(1, 7)}
+    prev_submit = False
+    while True:
+        time.sleep(0.025)
+        if not _GPIO_READY:
+            continue
+        try:
+            with _GPIO_LOCK:
+                dot_now = {d: GPIO.input(DOT_GPIO[d]) == GPIO.LOW for d in range(1, 7)}
+                sub_now = GPIO.input(ENTER_GPIO) == GPIO.LOW
+        except Exception:
+            continue
+
+        for d in range(1, 7):
+            now = dot_now[d]
+            if now and not prev_dots[d] and _debounce(DOT_GPIO[d]):
+                with _SEQUENCE_LOCK:
+                    if d not in _DOT_SEQUENCE and len(_DOT_SEQUENCE) < 6:
+                        _DOT_SEQUENCE.append(d)
+            prev_dots[d] = now
+
+        if sub_now and not prev_submit and _debounce("enter"):
+            _gpio_commit_submit()
+        prev_submit = sub_now
+
+
 def _pick_target() -> str:
     return random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
@@ -163,7 +311,7 @@ def _progress_payload(s: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _state_payload(s: dict[str, Any]) -> dict[str, Any]:
+def _state_payload(s: dict[str, Any], pending_dots: list[int]) -> dict[str, Any]:
     return {
         "target": s.get("api_target", "A"),
         "score": s.get("api_quiz_score", 0),
@@ -175,6 +323,8 @@ def _state_payload(s: dict[str, Any]) -> dict[str, Any]:
         "total_correct": s.get("total_correct", 0),
         "gpio_ok": _GPIO_READY,
         "progress": _progress_payload(s),
+        "pending_dots": pending_dots,
+        "feedback": s.get("api_feedback"),
     }
 
 
@@ -184,53 +334,41 @@ CORS(app)
 
 @app.get("/state")
 def get_state():
+    pending = _snapshot_pending()
     with _STATE_LOCK:
         s = load_user_state()
-        return jsonify(_state_payload(s))
+        return jsonify(_state_payload(s, pending))
 
 
 @app.post("/press")
 def post_press():
-    with _STATE_LOCK:
-        s = load_user_state()
-        pattern = read_dot_pattern()
-        s["api_last_pattern"] = list(pattern)
-
-        letter = BRAILLE_MAP.get(tuple(pattern))
-        s["api_last_decoded"] = letter
-
-        s["api_quiz_attempts"] = int(s.get("api_quiz_attempts", 0)) + 1
-        s["total_attempts"] = int(s.get("total_attempts", 0)) + 1
-
-        target = s.get("api_target", "A")
-        if letter is None:
-            s["api_last_result"] = "incorrect"
-            correct = False
-        else:
-            correct = letter == target
-            s["api_last_result"] = "correct" if correct else "incorrect"
-            if correct:
-                s["api_quiz_score"] = int(s.get("api_quiz_score", 0)) + 1
-                s["total_correct"] = int(s.get("total_correct", 0)) + 1
-
-        if "practice_results" not in s:
-            s["practice_results"] = []
-        s["practice_results"].append({"symbol": target, "correct": correct})
-
-        save_user_state(s)
-        return jsonify(_state_payload(s))
+    with _COMMIT_LOCK:
+        with _SEQUENCE_LOCK:
+            seq = list(_DOT_SEQUENCE)
+            _DOT_SEQUENCE.clear()
+        with _STATE_LOCK:
+            s = load_user_state()
+            if seq:
+                _apply_press_from_sequence(s, seq, use_snapshot_fallback=False)
+            else:
+                _apply_press_from_sequence(s, [], use_snapshot_fallback=True)
+            save_user_state(s)
+        return jsonify(_state_payload(s, _snapshot_pending()))
 
 
 @app.post("/next")
 def post_next():
+    with _SEQUENCE_LOCK:
+        _DOT_SEQUENCE.clear()
     with _STATE_LOCK:
         s = load_user_state()
         s["api_target"] = _pick_target()
         s["api_last_result"] = None
         s["api_last_decoded"] = None
         s["api_last_pattern"] = None
+        s["api_feedback"] = None
         save_user_state(s)
-        return jsonify(_state_payload(s))
+        return jsonify(_state_payload(s, _snapshot_pending()))
 
 
 @app.get("/")
@@ -249,6 +387,8 @@ def main():
     with _STATE_LOCK:
         if not os.path.exists(STATE_FILE):
             save_user_state(_default_user_state())
+    if _GPIO_READY:
+        threading.Thread(target=_gpio_input_loop, daemon=True).start()
     port = int(os.environ.get("PORT", "5001"))
     app.run(host="0.0.0.0", port=port, threaded=True)
 
