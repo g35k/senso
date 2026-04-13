@@ -1,3 +1,11 @@
+"""
+Senso — judge demo (short script, A–C only).
+Run on Pi:  python demo.py
+
+Same controls and lesson flow as braille.py: triangle = next lesson in menu, square = select / submit dots.
+State file: demo_state.json (separate from user_state.json used by braille.py).
+"""
+
 import os
 import json
 import random
@@ -7,18 +15,18 @@ from gtts import gTTS
 from gpiozero import Button
 
 # ─── GPIO Button Setup ────────────────────────────────────────
-DOT1   = Button(17, pull_up=True)
-DOT2   = Button(27, pull_up=True)
-DOT3   = Button(22, pull_up=True)
-DOT4   = Button(5,  pull_up=True)
-DOT5   = Button(6,  pull_up=True)
-DOT6   = Button(26, pull_up=True)
+DOT1 = Button(17, pull_up=True)
+DOT2 = Button(27, pull_up=True)
+DOT3 = Button(22, pull_up=True)
+DOT4 = Button(5, pull_up=True)
+DOT5 = Button(6, pull_up=True)
+DOT6 = Button(26, pull_up=True)
 SUBMIT = Button(23, pull_up=True)
-ARROW  = Button(24, pull_up=True)
+ARROW = Button(24, pull_up=True)
 
 DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
 
-# ─── TTS (same playback speed as before: atempo > 1 speeds up a bit) ─
+# ─── TTS (same playback speed as braille.py) ────────────────────
 def speak(text):
     print(f"[SPEAK] {text}")
     tts = gTTS(text=text, lang="en", tld="co.uk")
@@ -29,12 +37,14 @@ def speak(text):
     )
     play_mp3("_tts_fast.mp3")
 
+
 def play_mp3(filename):
     pygame.mixer.init()
     pygame.mixer.music.load(filename)
     pygame.mixer.music.play()
     while pygame.mixer.music.get_busy():
         time.sleep(0.02)
+
 
 def play_wav(filename):
     try:
@@ -46,33 +56,28 @@ def play_wav(filename):
     except Exception as e:
         print(f"[AUDIO ERROR] {filename}: {e}")
 
-SOUND_WELCOME   = "loading_sfx1_cut1.wav"
-SOUND_LESSON    = "loading_sfx3_cut1.wav"
-SOUND_CORRECT   = "correct_simple_sfx1.wav"
+
+SOUND_WELCOME = "loading_sfx1_cut1.wav"
+SOUND_LESSON = "loading_sfx3_cut1.wav"
+SOUND_CORRECT = "correct_simple_sfx1.wav"
 SOUND_INCORRECT = "incorrect_simple_sfx5.wav"
 
-# Menu — spoken when returning to the menu
+# Menu — spoken when returning to the menu (same as braille.py)
 SPEAK_MENU_SHORT = (
     "Triangle for next chapter. Square to open the selected chapter."
 )
 
-# ─── Lesson List ──────────────────────────────────────────────
+# ─── Short lesson list: intro → A–C → practice ─────────────────
 LESSONS = [
-    {"id": "intro",            "name": "Intro Chapter: Getting to know your tool"},
-    {"id": "alpha_ac",         "name": "Chapter 1, Lesson 1: Letters A, B, and C"},
-    {"id": "alpha_df",         "name": "Chapter 1, Lesson 2: Letters D, E, and F"},
-    {"id": "alpha_gi",         "name": "Chapter 1, Lesson 3: Letters G, H, and I"},
-    {"id": "alpha_aj",         "name": "Chapter 1, Lesson 4: Letters A to J"},
-    {"id": "alpha_kt",         "name": "Chapter 1, Lesson 5: Letters K to T"},
-    {"id": "alpha_uz",         "name": "Chapter 1, Lesson 6: Letters U to Z"},
-    {"id": "practice_alpha",   "name": "Chapter 1, Lesson 7: Practicing all the letters"},
-    {"id": "numbers_04",       "name": "Chapter 1, Lesson 8: Numbers 1 to 5"},
-    {"id": "numbers_59",       "name": "Chapter 1, Lesson 9: Numbers 6 to 0"},
-    {"id": "practice_numbers", "name": "Chapter 1, Lesson 10: Practicing all the numbers"},
+    {"id": "intro", "name": "Intro Chapter: Getting to know your tool"},
+    {"id": "demo_abc", "name": "Chapter 1, Lesson 1: Letters A, B, and C"},
+    {"id": "demo_practice", "name": "Chapter 1, Lesson 7: Practicing letters A, B, and C"},
 ]
+
 
 def lesson_name(idx):
     return LESSONS[idx]["name"] if 0 <= idx < len(LESSONS) else ""
+
 
 def lesson_index_by_id(lesson_id):
     for i, l in enumerate(LESSONS):
@@ -80,12 +85,14 @@ def lesson_index_by_id(lesson_id):
             return i
     return 0
 
-# ─── State ────────────────────────────────────────────────────
-STATE_FILE = "user_state.json"
+
+STATE_FILE = "demo_state.json"
+
 
 def load_state():
     if os.path.exists(STATE_FILE):
-        os.remove(STATE_FILE)
+        with open(STATE_FILE, "r") as f:
+            return json.load(f)
     return {
         "first_time": True,
         "current_lesson": "intro",
@@ -97,17 +104,19 @@ def load_state():
         "practice_results": [],
     }
 
+
 def save_state(state):
-    with open(STATE_FILE, 'w') as f:
+    with open(STATE_FILE, "w") as f:
         json.dump(state, f, indent=2)
-    attempts = state['total_attempts']
-    correct  = state['total_correct']
+    attempts = state["total_attempts"]
+    correct = state["total_correct"]
     acc = 0 if attempts == 0 else round(100 * correct / attempts)
-    done_names = [lesson_name(lesson_index_by_id(lid)) for lid in state['completed_lessons']]
-    print(f"\n[SAVED]")
+    done_names = [lesson_name(lesson_index_by_id(lid)) for lid in state["completed_lessons"]]
+    print(f"\n[SAVED demo]")
     print(f"  Current lesson : {lesson_name(lesson_index_by_id(state['current_lesson']))}")
     print(f"  Completed      : {done_names}")
     print(f"  Accuracy       : {acc}% ({correct}/{attempts})\n")
+
 
 def log_practice_result(symbol, correct, state):
     result = {"symbol": symbol, "correct": correct}
@@ -117,50 +126,95 @@ def log_practice_result(symbol, correct, state):
     status = "CORRECT" if correct else "INCORRECT"
     print(f"[PRACTICE] {symbol} → {status}")
 
-# ─── Braille Data ─────────────────────────────────────────────
+
 BRAILLE_MAP = {
-    (1,0,0,0,0,0):'A', (1,1,0,0,0,0):'B', (1,0,0,1,0,0):'C',
-    (1,0,0,1,1,0):'D', (1,0,0,0,1,0):'E', (1,1,0,1,0,0):'F',
-    (1,1,0,1,1,0):'G', (1,1,0,0,1,0):'H', (0,1,0,1,0,0):'I',
-    (0,1,0,1,1,0):'J', (1,0,1,0,0,0):'K', (1,1,1,0,0,0):'L',
-    (1,0,1,1,0,0):'M', (1,0,1,1,1,0):'N', (1,0,1,0,1,0):'O',
-    (1,1,1,1,0,0):'P', (1,1,1,1,1,0):'Q', (1,1,1,0,1,0):'R',
-    (0,1,1,1,0,0):'S', (0,1,1,1,1,0):'T', (1,0,1,0,0,1):'U',
-    (1,1,1,0,0,1):'V', (0,1,0,1,1,1):'W', (1,0,1,1,0,1):'X',
-    (1,0,1,1,1,1):'Y', (1,0,1,0,1,1):'Z',
+    (1, 0, 0, 0, 0, 0): "A",
+    (1, 1, 0, 0, 0, 0): "B",
+    (1, 0, 0, 1, 0, 0): "C",
+    (1, 0, 0, 1, 1, 0): "D",
+    (1, 0, 0, 0, 1, 0): "E",
+    (1, 1, 0, 1, 0, 0): "F",
+    (1, 1, 0, 1, 1, 0): "G",
+    (1, 1, 0, 0, 1, 0): "H",
+    (0, 1, 0, 1, 0, 0): "I",
+    (0, 1, 0, 1, 1, 0): "J",
+    (1, 0, 1, 0, 0, 0): "K",
+    (1, 1, 1, 0, 0, 0): "L",
+    (1, 0, 1, 1, 0, 0): "M",
+    (1, 0, 1, 1, 1, 0): "N",
+    (1, 0, 1, 0, 1, 0): "O",
+    (1, 1, 1, 1, 0, 0): "P",
+    (1, 1, 1, 1, 1, 0): "Q",
+    (1, 1, 1, 0, 1, 0): "R",
+    (0, 1, 1, 1, 0, 0): "S",
+    (0, 1, 1, 1, 1, 0): "T",
+    (1, 0, 1, 0, 0, 1): "U",
+    (1, 1, 1, 0, 0, 1): "V",
+    (0, 1, 0, 1, 1, 1): "W",
+    (1, 0, 1, 1, 0, 1): "X",
+    (1, 0, 1, 1, 1, 1): "Y",
+    (1, 0, 1, 0, 1, 1): "Z",
 }
 
 DOT_INSTRUCTIONS = {
-    'A':'dot 1',               'B':'dots 1 and 2',            'C':'dots 1 and 4',
-    'D':'dots 1, 4, and 5',    'E':'dots 1 and 5',            'F':'dots 1, 2, and 4',
-    'G':'dots 1, 2, 4, and 5', 'H':'dots 1, 2, and 5',        'I':'dots 2 and 4',
-    'J':'dots 2, 4, and 5',    'K':'dots 1 and 3',            'L':'dots 1, 2, and 3',
-    'M':'dots 1, 3, and 4',    'N':'dots 1, 3, 4, and 5',     'O':'dots 1, 3, and 5',
-    'P':'dots 1, 2, 3, and 4', 'Q':'dots 1, 2, 3, 4, and 5',  'R':'dots 1, 2, 3, and 5',
-    'S':'dots 2, 3, and 4',    'T':'dots 2, 3, 4, and 5',     'U':'dots 1, 3, and 6',
-    'V':'dots 1, 2, 3, and 6', 'W':'dots 2, 4, 5, and 6',     'X':'dots 1, 3, 4, and 6',
-    'Y':'dots 1, 3, 4, 5, and 6', 'Z':'dots 1, 3, 5, and 6',
+    "A": "dot 1",
+    "B": "dots 1 and 2",
+    "C": "dots 1 and 4",
+    "D": "dots 1, 4, and 5",
+    "E": "dots 1 and 5",
+    "F": "dots 1, 2, and 4",
+    "G": "dots 1, 2, 4, and 5",
+    "H": "dots 1, 2, and 5",
+    "I": "dots 2 and 4",
+    "J": "dots 2, 4, and 5",
+    "K": "dots 1 and 3",
+    "L": "dots 1, 2, and 3",
+    "M": "dots 1, 3, and 4",
+    "N": "dots 1, 3, 4, and 5",
+    "O": "dots 1, 3, and 5",
+    "P": "dots 1, 2, 3, and 4",
+    "Q": "dots 1, 2, 3, 4, and 5",
+    "R": "dots 1, 2, 3, and 5",
+    "S": "dots 2, 3, and 4",
+    "T": "dots 2, 3, 4, and 5",
+    "U": "dots 1, 3, and 6",
+    "V": "dots 1, 2, 3, and 6",
+    "W": "dots 2, 4, 5, and 6",
+    "X": "dots 1, 3, 4, and 6",
+    "Y": "dots 1, 3, 4, 5, and 6",
+    "Z": "dots 1, 3, 5, and 6",
 }
 
-NUMBER_SIGN             = (0,0,1,1,1,1)
+NUMBER_SIGN = (0, 0, 1, 1, 1, 1)
 NUMBER_SIGN_INSTRUCTION = "dots 3, 4, 5, and 6"
 
 NUMBER_MAP = {
-    (1,0,0,0,0,0):'1', (1,1,0,0,0,0):'2', (1,0,0,1,0,0):'3',
-    (1,0,0,1,1,0):'4', (1,0,0,0,1,0):'5', (1,1,0,1,0,0):'6',
-    (1,1,0,1,1,0):'7', (1,1,0,0,1,0):'8', (0,1,0,1,0,0):'9',
-    (0,1,0,1,1,0):'0',
+    (1, 0, 0, 0, 0, 0): "1",
+    (1, 1, 0, 0, 0, 0): "2",
+    (1, 0, 0, 1, 0, 0): "3",
+    (1, 0, 0, 1, 1, 0): "4",
+    (1, 0, 0, 0, 1, 0): "5",
+    (1, 1, 0, 1, 0, 0): "6",
+    (1, 1, 0, 1, 1, 0): "7",
+    (1, 1, 0, 0, 1, 0): "8",
+    (0, 1, 0, 1, 0, 0): "9",
+    (0, 1, 0, 1, 1, 0): "0",
 }
 
 NUMBER_INSTRUCTIONS = {
-    '1':'dot 1',               '2':'dots 1 and 2',        '3':'dots 1 and 4',
-    '4':'dots 1, 4, and 5',    '5':'dots 1 and 5',        '6':'dots 1, 2, and 4',
-    '7':'dots 1, 2, 4, and 5', '8':'dots 1, 2, and 5',    '9':'dots 2 and 4',
-    '0':'dots 2, 4, and 5',
+    "1": "dot 1",
+    "2": "dots 1 and 2",
+    "3": "dots 1 and 4",
+    "4": "dots 1, 4, and 5",
+    "5": "dots 1 and 5",
+    "6": "dots 1, 2, and 4",
+    "7": "dots 1, 2, 4, and 5",
+    "8": "dots 1, 2, and 5",
+    "9": "dots 2 and 4",
+    "0": "dots 2, 4, and 5",
 }
 
-# ─── GPIO Input Helpers ───────────────────────────────────────
-# Braille cell reading order for presses: 1, 4, 2, 5, 3, 6 (must match this order in the sequence).
+# ─── GPIO Input Helpers (same logic as braille.py) ──────────────
 BRAILLE_DOT_ORDER = "142536"
 
 
@@ -226,12 +280,14 @@ def validate_dot_order(raw: str, expected_dot_tuple=None, order_context: str | N
         return False, f"That order was not quite right. For this pattern, press in this order: {want}. Try again!"
     return True, ""
 
+
 def wait_for_submit():
     """Wait for square press. Returns 'submit'."""
     print("  [press square to continue]")
     SUBMIT.wait_for_press()
     SUBMIT.wait_for_release()
-    return 'submit'
+    return "submit"
+
 
 def get_dot_input(
     prompt,
@@ -263,6 +319,7 @@ def get_dot_input(
             continue
         return raw
 
+
 def get_menu_input():
     """Arrow press = next. Square press = select. Returns 'n' or 'e'."""
     print("  [arrow=next  square=select]")
@@ -271,10 +328,10 @@ def get_menu_input():
             time.sleep(0.02)
         if ARROW.is_pressed:
             ARROW.wait_for_release()
-            return 'n'
+            return "n"
         if SUBMIT.is_pressed:
             SUBMIT.wait_for_release()
-            return 'e'
+            return "e"
 
 
 def _wait_for_any_dot_press():
@@ -307,7 +364,6 @@ def _wait_for_triangle_press():
 
 
 def run_intro_lesson(state):
-    """Kid-friendly intro: try a dot, then square, then triangle — each with praise."""
     state["current_lesson"] = "intro"
     save_state(state)
 
@@ -345,7 +401,7 @@ def run_intro_lesson(state):
     return "done"
 
 
-# ─── Menu ─────────────────────────────────────────────────────
+# ─── Menu ───────────────────────────────────────────────────────
 def show_menu(state, interrupted=False):
     if interrupted:
         speak("We are back at the menu. " + SPEAK_MENU_SHORT)
@@ -358,32 +414,34 @@ def show_menu(state, interrupted=False):
     while True:
         raw = get_menu_input()
 
-        if raw == 'n':
+        if raw == "n":
             idx = (idx + 1) % len(LESSONS)
             speak("Next chapter: " + lesson_name(idx))
 
-        elif raw == 'e':
+        elif raw == "e":
             play_wav(SOUND_LESSON)
             speak(lesson_name(idx))
             speak("Starting this chapter.")
             return idx
 
-# ─── After lesson: announce next + wait ───────────────────────
+
+# ─── After lesson: announce next + wait ─────────────────────────
 def lesson_end_prompt(current_idx, state):
     next_idx = current_idx + 1
     if next_idx >= len(LESSONS):
         speak("You finished every chapter.")
-        return 'menu'
+        return "menu"
     speak(
         f"Your next chapter is: {lesson_name(next_idx)}. "
         "When you feel ready for the next one, press the square button."
     )
     while True:
         result = wait_for_submit()
-        if result == 'submit':
+        if result == "submit":
             return next_idx
 
-# ─── Teach one symbol (learn mode — loops until correct) ──────
+
+# ─── Teach one symbol (learn mode — loops until correct) ────────
 def teach_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
     instruction = instruction_map[symbol]
     submit_hint = "Press each dot in order, then the square button when you want to submit."
@@ -416,9 +474,7 @@ def teach_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
             if dot_tuple != NUMBER_SIGN:
                 play_wav(SOUND_INCORRECT)
                 state["total_attempts"] += 1
-                speak(
-                    f"The number sign is {NUMBER_SIGN_INSTRUCTION}. {submit_hint}"
-                )
+                speak(f"The number sign is {NUMBER_SIGN_INSTRUCTION}. {submit_hint}")
                 continue
 
             play_wav(SOUND_CORRECT)
@@ -465,6 +521,7 @@ def teach_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
                 speak(f"The number {symbol} is {instruction}. {submit_hint}")
             else:
                 speak(f"The letter {symbol} is {instruction}. {submit_hint}")
+
 
 # ─── Quiz one symbol (practice mode — always moves on) ────────
 def quiz_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
@@ -524,136 +581,76 @@ def quiz_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
         result = symbol_map.get(dot_tuple)
         correct = result == symbol
 
-    state['total_attempts'] += 1
+    state["total_attempts"] += 1
 
     if correct:
         play_wav(SOUND_CORRECT)
         speak("Correct.")
-        state['total_correct'] += 1
+        state["total_correct"] += 1
     else:
         play_wav(SOUND_INCORRECT)
         speak(f"The answer was {symbol}. It is {instruction}. {submit_hint}")
 
     log_practice_result(symbol, correct, state)
     save_state(state)
-    return 'done'
+    return "done"
 
-# ─── Lessons ──────────────────────────────────────────────────
+
 def run_letter_lesson(lesson_id, letters, state):
-    state['current_lesson'] = lesson_id
+    state["current_lesson"] = lesson_id
     save_state(state)
     i = 0
     while i < len(letters):
         result = teach_symbol(letters[i], BRAILLE_MAP, DOT_INSTRUCTIONS, state)
-        if result == 'menu':
-            return 'menu'
-        if result == 'correct':
-            if letters[i] not in state['letters_completed']:
-                state['letters_completed'].append(letters[i])
+        if result == "menu":
+            return "menu"
+        if result == "correct":
+            if letters[i] not in state["letters_completed"]:
+                state["letters_completed"].append(letters[i])
             i += 1
-    if lesson_id not in state['completed_lessons']:
-        state['completed_lessons'].append(lesson_id)
+    if lesson_id not in state["completed_lessons"]:
+        state["completed_lessons"].append(lesson_id)
     save_state(state)
-    return 'done'
+    return "done"
 
-def run_practice_alpha(state):
-    state['current_lesson'] = 'practice_alpha'
+
+def run_practice_demo(state):
+    state["current_lesson"] = "demo_practice"
     save_state(state)
-    done = state['letters_completed']
+    done = [x for x in state["letters_completed"] if x in "ABC"]
     if not done:
         speak("Learn some letters in an earlier chapter first. Then you can come back here to practice.")
-        return 'menu'
+        return "menu"
     speak("Practice. I will say letters you already know.")
     pool = done.copy()
     random.shuffle(pool)
     print("\n[PRACTICE LOG]")
     for letter in pool:
         result = quiz_symbol(letter, BRAILLE_MAP, DOT_INSTRUCTIONS, state)
-        if result == 'menu':
-            return 'menu'
+        if result == "menu":
+            return "menu"
     results = state.get("practice_results", [])
-    session = results[-len(pool):]
+    session = results[-len(pool) :]
     correct_count = sum(1 for r in session if r["correct"])
     print(f"[PRACTICE SUMMARY] {correct_count}/{len(pool)} correct")
     speak(f"Practice is done. You got {correct_count} right out of {len(pool)}.")
-    if 'practice_alpha' not in state['completed_lessons']:
-        state['completed_lessons'].append('practice_alpha')
+    if "demo_practice" not in state["completed_lessons"]:
+        state["completed_lessons"].append("demo_practice")
     save_state(state)
-    return 'done'
+    return "done"
 
-def run_number_lesson(lesson_id, numbers, state):
-    state['current_lesson'] = lesson_id
-    save_state(state)
-    if lesson_id == 'numbers_04':
-        speak(
-            "In Braille, every number starts with a number sign: dots 3, 4, 5, and 6. "
-            "You press that number sign, then the number. Each time, press each dot in order, then the square button when you want to submit."
-        )
-    i = 0
-    while i < len(numbers):
-        result = teach_symbol(numbers[i], NUMBER_MAP, NUMBER_INSTRUCTIONS, state, is_number=True)
-        if result == 'menu':
-            return 'menu'
-        if result == 'correct':
-            if numbers[i] not in state['numbers_completed']:
-                state['numbers_completed'].append(numbers[i])
-            i += 1
-    if lesson_id not in state['completed_lessons']:
-        state['completed_lessons'].append(lesson_id)
-    save_state(state)
-    return 'done'
-
-def run_practice_numbers(state):
-    state['current_lesson'] = 'practice_numbers'
-    save_state(state)
-    done = state['numbers_completed']
-    if not done:
-        speak("Learn numbers in an earlier chapter first. Then you can come back here to practice.")
-        return 'menu'
-    speak("Number practice. I will quiz you on numbers you already know.")
-    pool = done.copy()
-    random.shuffle(pool)
-    print("\n[PRACTICE LOG]")
-    for number in pool:
-        result = quiz_symbol(number, NUMBER_MAP, NUMBER_INSTRUCTIONS, state, is_number=True)
-        if result == 'menu':
-            return 'menu'
-    results = state.get("practice_results", [])
-    session = results[-len(pool):]
-    correct_count = sum(1 for r in session if r["correct"])
-    print(f"[PRACTICE SUMMARY] {correct_count}/{len(pool)} correct")
-    speak(f"Practice is done. You got {correct_count} right out of {len(pool)}.")
-    if 'practice_numbers' not in state['completed_lessons']:
-        state['completed_lessons'].append('practice_numbers')
-    save_state(state)
-    return 'done'
 
 def run_lesson(idx, state):
     lesson_id = LESSONS[idx]["id"]
     if lesson_id == "intro":
         return run_intro_lesson(state)
-    elif lesson_id == "alpha_ac":
-        return run_letter_lesson("alpha_ac", list("ABC"), state)
-    elif lesson_id == "alpha_df":
-        return run_letter_lesson("alpha_df", list("DEF"), state)
-    elif lesson_id == "alpha_gi":
-        return run_letter_lesson("alpha_gi", list("GHI"), state)
-    elif lesson_id == "alpha_aj":
-        return run_letter_lesson("alpha_aj", list("ABCDEFGHIJ"), state)
-    elif lesson_id == "alpha_kt":
-        return run_letter_lesson("alpha_kt", list("KLMNOPQRST"), state)
-    elif lesson_id == "alpha_uz":
-        return run_letter_lesson("alpha_uz", list("UVWXYZ"), state)
-    elif lesson_id == "practice_alpha":
-        return run_practice_alpha(state)
-    elif lesson_id == "numbers_04":
-        return run_number_lesson("numbers_04", list("12345"), state)
-    elif lesson_id == "numbers_59":
-        return run_number_lesson("numbers_59", list("67890"), state)
-    elif lesson_id == "practice_numbers":
-        return run_practice_numbers(state)
+    if lesson_id == "demo_abc":
+        return run_letter_lesson("demo_abc", list("ABC"), state)
+    if lesson_id == "demo_practice":
+        return run_practice_demo(state)
+    return "done"
 
-# ─── Main ─────────────────────────────────────────────────────
+
 def main():
     state = load_state()
     play_wav(SOUND_WELCOME)
@@ -675,27 +672,27 @@ def main():
         interrupted = False
         result = run_lesson(current_idx, state)
 
-        if result == 'menu':
+        if result == "menu":
             interrupted = True
             continue
 
-        if result == 'done':
+        if result == "done":
             outcome = lesson_end_prompt(current_idx, state)
-            if outcome == 'menu':
+            if outcome == "menu":
                 interrupted = False
                 continue
-            else:
-                next_idx = outcome
-                result2 = run_lesson(next_idx, state)
-                if result2 == 'menu':
-                    interrupted = True
-                    continue
-                if result2 == 'done':
-                    outcome2 = lesson_end_prompt(next_idx, state)
-                    if outcome2 == 'menu':
-                        interrupted = False
-                    else:
-                        current_idx = outcome2
+            next_idx = outcome
+            result2 = run_lesson(next_idx, state)
+            if result2 == "menu":
+                interrupted = True
+                continue
+            if result2 == "done":
+                outcome2 = lesson_end_prompt(next_idx, state)
+                if outcome2 == "menu":
+                    interrupted = False
+                else:
+                    current_idx = outcome2
+
 
 if __name__ == "__main__":
     main()
