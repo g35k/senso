@@ -18,19 +18,24 @@ ARROW  = Button(24, pull_up=True)
 
 DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
 
+# Playback volume: 0.0 (silent) to 1.0 (max). Lower this if the speaker is too loud.
+AUDIO_VOLUME = 0.70
+
 # ─── TTS (same playback speed as before: atempo > 1 speeds up a bit) ─
 def speak(text):
     print(f"[SPEAK] {text}")
     tts = gTTS(text=text, lang="en", tld="co.uk")
     tts.save("_tts_out.mp3")
     speed = 1.25
+    v = AUDIO_VOLUME
     os.system(
-        f'ffmpeg -y -i _tts_out.mp3 -filter:a "atempo={speed}" _tts_fast.mp3 -loglevel quiet'
+        f'ffmpeg -y -i _tts_out.mp3 -filter:a "atempo={speed},volume={v}" _tts_fast.mp3 -loglevel quiet'
     )
     play_mp3("_tts_fast.mp3")
 
 def play_mp3(filename):
     pygame.mixer.init()
+    pygame.mixer.music.set_volume(AUDIO_VOLUME)
     pygame.mixer.music.load(filename)
     pygame.mixer.music.play()
     while pygame.mixer.music.get_busy():
@@ -39,6 +44,7 @@ def play_mp3(filename):
 def play_wav(filename):
     try:
         pygame.mixer.init()
+        pygame.mixer.music.set_volume(AUDIO_VOLUME)
         pygame.mixer.music.load(filename)
         pygame.mixer.music.play()
         while pygame.mixer.music.get_busy():
@@ -50,6 +56,12 @@ SOUND_WELCOME   = "loading_sfx1_cut1.wav"
 SOUND_LESSON    = "loading_sfx3_cut1.wav"
 SOUND_CORRECT   = "correct_simple_sfx1.wav"
 SOUND_INCORRECT = "incorrect_simple_sfx5.wav"
+
+
+def play_incorrect_feedback():
+    """Wrong-answer sound only (vibration disabled)."""
+    play_wav(SOUND_INCORRECT)
+
 
 # Menu — spoken when returning to the menu
 SPEAK_MENU_SHORT = (
@@ -206,7 +218,7 @@ def validate_dot_order(raw: str, expected_dot_tuple=None, order_context: str | N
     if not digits:
         return False, "No dots yet. Press your dots in order, then the square button."
     if len(digits) != len(set(digits)):
-        play_wav(SOUND_INCORRECT)
+        play_incorrect_feedback()
         return False, "You used the same dot twice. Try again."
     present_set = set(digits)
     correct_sequence = [d for d in BRAILLE_DOT_ORDER if d in present_set]
@@ -214,14 +226,14 @@ def validate_dot_order(raw: str, expected_dot_tuple=None, order_context: str | N
         exp_set = {str(i + 1) for i, v in enumerate(expected_dot_tuple) if v}
         want = _order_phrase_from_tuple(expected_dot_tuple)
         if present_set != exp_set:
-            play_wav(SOUND_INCORRECT)
+            play_incorrect_feedback()
             return False, f"That was not quite right. For this {ctx}, press in this order: {want}. Try again!"
         if digits != correct_sequence:
-            play_wav(SOUND_INCORRECT)
+            play_incorrect_feedback()
             return False, f"That order was not quite right. For this {ctx}, press in this order: {want}. Try again!"
         return True, ""
     if digits != correct_sequence:
-        play_wav(SOUND_INCORRECT)
+        play_incorrect_feedback()
         want = ", ".join(correct_sequence)
         return False, f"That order was not quite right. For this pattern, press in this order: {want}. Try again!"
     return True, ""
@@ -245,7 +257,7 @@ def get_dot_input(
     while True:
         raw, dot_tuple = read_dot_input()
         if all(v == 0 for v in dot_tuple):
-            play_wav(SOUND_INCORRECT)
+            play_incorrect_feedback()
             if reminder_when_empty:
                 speak(reminder_when_empty)
             else:
@@ -414,7 +426,7 @@ def teach_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
             dot_tuple = tuple(1 if str(i + 1) in set(raw) else 0 for i in range(6))
 
             if dot_tuple != NUMBER_SIGN:
-                play_wav(SOUND_INCORRECT)
+                play_incorrect_feedback()
                 state["total_attempts"] += 1
                 speak(
                     f"The number sign is {NUMBER_SIGN_INSTRUCTION}. {submit_hint}"
@@ -460,7 +472,7 @@ def teach_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
             save_state(state)
             return "correct"
         else:
-            play_wav(SOUND_INCORRECT)
+            play_incorrect_feedback()
             if is_number:
                 speak(f"The number {symbol} is {instruction}. {submit_hint}")
             else:
@@ -531,7 +543,7 @@ def quiz_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
         speak("Correct.")
         state['total_correct'] += 1
     else:
-        play_wav(SOUND_INCORRECT)
+        play_incorrect_feedback()
         speak(f"The answer was {symbol}. It is {instruction}. {submit_hint}")
 
     log_practice_result(symbol, correct, state)
