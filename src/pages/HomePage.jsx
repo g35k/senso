@@ -57,12 +57,12 @@ export default function HomePage() {
     const device = new THREE.Group()
     scene.add(device)
 
-    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x6b7280 })
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0xffffff })
     device.add(new THREE.Mesh(new THREE.BoxGeometry(6, 1.5, 4), bodyMat))
 
     const cap = new THREE.Mesh(
       new THREE.BoxGeometry(5.85, 0.07, 3.85),
-      new THREE.MeshLambertMaterial({ color: 0x6b7280 }),
+      new THREE.MeshLambertMaterial({ color: 0xffffff }),
     )
     cap.position.y = 0.78
     device.add(cap)
@@ -83,7 +83,7 @@ export default function HomePage() {
 
     const enter = new THREE.Mesh(
       new THREE.BoxGeometry(0.92, 0.22, 0.92),
-      new THREE.MeshLambertMaterial({ color: 0x1a2a4a }),
+      new THREE.MeshLambertMaterial({ color: 0xf05a28 }),
     )
     enter.position.set(1.6, 0.75 + 0.11, -0.75)
     device.add(enter)
@@ -93,9 +93,9 @@ export default function HomePage() {
     triShape.lineTo(0.5, 0.35)
     triShape.lineTo(-0.5, 0.35)
     triShape.closePath()
-
+    //0x1a2a4a  0xf05a28
     const triGeo = new THREE.ExtrudeGeometry(triShape, { depth: 0.22, bevelEnabled: false })
-    const bs = new THREE.Mesh(triGeo, new THREE.MeshLambertMaterial({ color: 0xf05a28 }))
+    const bs = new THREE.Mesh(triGeo, new THREE.MeshLambertMaterial({ color: 0x1a2a4a }))
     bs.rotation.x = -Math.PI / 2
     bs.rotation.z = Math.PI / 2
     bs.position.set(1.6, 0.75 + 0.11, 0.65)

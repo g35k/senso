@@ -283,7 +283,7 @@ def validate_dot_order(raw: str, expected_dot_tuple=None, order_context: str | N
         want = _order_phrase_from_tuple(expected_dot_tuple)
         if present_set != exp_set:
             play_wav(SOUND_INCORRECT)
-            return False, f"That was a good try! However, it looks you pressed it in the wrong order. For this {ctx}, press in this order: {want}. Please try again!"
+            return False, f"That was a good try! However, it looks like you pressed it in the wrong order. For this {ctx}, press in this order: {want}. Please try again!"
         if digits != correct_sequence:
             play_wav(SOUND_INCORRECT)
             return False, f"That order was not quite right. For this {ctx}, press in this order: {want}. Try again!"
