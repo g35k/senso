@@ -11,32 +11,46 @@ import json
 import random
 import pygame
 import time
-from gtts import gTTS
-from gpiozero import Button
+from elevenlabs.client import ElevenLabs
+from elevenlabs import stream
+
+
+VOICES = {
+    "jessica": "cgSgspJ2msm6clMCkdW9",
+    "george":   "JBFqnCBsd6RMkjVDRZzb",
+    "sen": "qpABpf73fEJ7NvAPydSY"
+}
+
+el_client = ElevenLabs(api_key=os.environ.get("ELEVENLABS_API_KEY"))
+CURRENT_VOICE = "sen"
 
 # ─── GPIO Button Setup ────────────────────────────────────────
-DOT1 = Button(17, pull_up=True)
-DOT2 = Button(27, pull_up=True)
-DOT3 = Button(22, pull_up=True)
-DOT4 = Button(5, pull_up=True)
-DOT5 = Button(6, pull_up=True)
-DOT6 = Button(26, pull_up=True)
-SUBMIT = Button(23, pull_up=True)
-ARROW = Button(24, pull_up=True)
+#DOT1 = Button(17, pull_up=True)
+#DOT2 = Button(27, pull_up=True)
+#DOT3 = Button(22, pull_up=True)
+#DOT4 = Button(5, pull_up=True)
+#DOT5 = Button(6, pull_up=True)
+#DOT6 = Button(26, pull_up=True)
+#SUBMIT = Button(23, pull_up=True)
+#ARROW = Button(24, pull_up=True)
 
-DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
+#DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
 
-# ─── TTS (same playback speed as braille.py) ────────────────────
+AUDIO_VOLUME = 0.70
+
+# ─── TTS  ─
 def speak(text):
     print(f"[SPEAK] {text}")
-    tts = gTTS(text=text, lang="en", tld="co.uk")
-    tts.save("_tts_out.mp3")
-    speed = 1.25
-    os.system(
-        f'ffmpeg -y -i _tts_out.mp3 -filter:a "atempo={speed}" _tts_fast.mp3 -loglevel quiet'
+    audio = el_client.text_to_speech.convert(
+        voice_id=VOICES[CURRENT_VOICE],
+        text=text,
+        model_id="eleven_turbo_v2",
     )
-    play_mp3("_tts_fast.mp3")
-
+    # Save to file then play instead of streaming
+    with open("_tts_out.mp3", "wb") as f:
+        for chunk in audio:
+            f.write(chunk)
+    play_mp3("_tts_out.mp3")
 
 def play_mp3(filename):
     pygame.mixer.init()
@@ -64,7 +78,7 @@ SOUND_INCORRECT = "incorrect_simple_sfx5.wav"
 
 # Menu — spoken when returning to the menu (same as braille.py)
 SPEAK_MENU_SHORT = (
-    "Triangle for next chapter. Square to open the selected chapter."
+    "If you want to keep looking through the chapters use the triangle button. When you find a chapter you like use the square to start the chapter."
 )
 
 # ─── Short lesson list: intro → A–C → practice ─────────────────
@@ -269,7 +283,7 @@ def validate_dot_order(raw: str, expected_dot_tuple=None, order_context: str | N
         want = _order_phrase_from_tuple(expected_dot_tuple)
         if present_set != exp_set:
             play_wav(SOUND_INCORRECT)
-            return False, f"That was not quite right. For this {ctx}, press in this order: {want}. Try again!"
+            return False, f"That was a good try! However, it looks you pressed it in the wrong order. For this {ctx}, press in this order: {want}. Please try again!"
         if digits != correct_sequence:
             play_wav(SOUND_INCORRECT)
             return False, f"That order was not quite right. For this {ctx}, press in this order: {want}. Try again!"
@@ -306,7 +320,7 @@ def get_dot_input(
                 speak(reminder_when_empty)
             else:
                 speak(
-                    "I did not get any dots. Press each dot in order, then the square button when you want to submit."
+                    "It looks like you forgot to press at least one of the braille buttons. Remeber you want to press each dot in order, then the square button when you want to submit."
                 )
             continue
         ok, err = validate_dot_order(
@@ -444,7 +458,7 @@ def lesson_end_prompt(current_idx, state):
 # ─── Teach one symbol (learn mode — loops until correct) ────────
 def teach_symbol(symbol, symbol_map, instruction_map, state, is_number=False):
     instruction = instruction_map[symbol]
-    submit_hint = "Press each dot in order, then the square button when you want to submit."
+    submit_hint = "Be sure to press each dot in order, then press the square button when you are done. Give it a try!"
     letter_reminder = (
         f"Let's learn the letter {symbol}. It is {instruction}. {submit_hint}"
     )

@@ -3,35 +3,46 @@ import json
 import random
 import pygame
 import time
-from gtts import gTTS
-from gpiozero import Button
+from elevenlabs.client import ElevenLabs
+from elevenlabs import stream
+
+VOICES = {
+    "jessica": "cgSgspJ2msm6clMCkdW9",
+    "george":   "JBFqnCBsd6RMkjVDRZzb",
+    "sen": "qpABpf73fEJ7NvAPydSY"
+}
+
+el_client = ElevenLabs(api_key=os.environ.get("ELEVENLABS_API_KEY"))
+CURRENT_VOICE = "sen"
 
 # ─── GPIO Button Setup ────────────────────────────────────────
-DOT1   = Button(17, pull_up=True)
-DOT2   = Button(27, pull_up=True)
-DOT3   = Button(22, pull_up=True)
-DOT4   = Button(5,  pull_up=True)
-DOT5   = Button(6,  pull_up=True)
-DOT6   = Button(26, pull_up=True)
-SUBMIT = Button(23, pull_up=True)
-ARROW  = Button(24, pull_up=True)
+#DOT1   = Button(17, pull_up=True)
+#DOT2   = Button(27, pull_up=True)
+#DOT3   = Button(22, pull_up=True)
+#DOT4   = Button(5,  pull_up=True)
+#DOT5   = Button(6,  pull_up=True)
+#DOT6   = Button(26, pull_up=True)
+#SUBMIT = Button(23, pull_up=True)
+#ARROW  = Button(24, pull_up=True)
 
-DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
+#DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
 
 # Playback volume: 0.0 (silent) to 1.0 (max). Lower this if the speaker is too loud.
 AUDIO_VOLUME = 0.70
 
-# ─── TTS (same playback speed as before: atempo > 1 speeds up a bit) ─
+# ─── TTS  ─
 def speak(text):
     print(f"[SPEAK] {text}")
-    tts = gTTS(text=text, lang="en", tld="co.uk")
-    tts.save("_tts_out.mp3")
-    speed = 1.25
-    v = AUDIO_VOLUME
-    os.system(
-        f'ffmpeg -y -i _tts_out.mp3 -filter:a "atempo={speed},volume={v}" _tts_fast.mp3 -loglevel quiet'
+    audio = el_client.text_to_speech.convert(
+        voice_id=VOICES[CURRENT_VOICE],
+        text=text,
+        model_id="eleven_turbo_v2",
     )
-    play_mp3("_tts_fast.mp3")
+    # Save to file then play instead of streaming
+    with open("_tts_out.mp3", "wb") as f:
+        for chunk in audio:
+            f.write(chunk)
+    play_mp3("_tts_out.mp3")
 
 def play_mp3(filename):
     pygame.mixer.init()
@@ -65,7 +76,7 @@ def play_incorrect_feedback():
 
 # Menu — spoken when returning to the menu
 SPEAK_MENU_SHORT = (
-    "Triangle for next chapter. Square to open the selected chapter."
+    "If you want to keep looking through the chapters use the triangle button. When you find a chapter you like use the square to start the chapter."
 )
 
 # ─── Lesson List ──────────────────────────────────────────────
@@ -219,7 +230,7 @@ def validate_dot_order(raw: str, expected_dot_tuple=None, order_context: str | N
         return False, "No dots yet. Press your dots in order, then the square button."
     if len(digits) != len(set(digits)):
         play_incorrect_feedback()
-        return False, "You used the same dot twice. Try again."
+        return False, "Oops! It looks like you used the same dot twice. Please try again."
     present_set = set(digits)
     correct_sequence = [d for d in BRAILLE_DOT_ORDER if d in present_set]
     if expected_dot_tuple is not None:
@@ -360,9 +371,9 @@ def run_intro_lesson(state):
 # ─── Menu ─────────────────────────────────────────────────────
 def show_menu(state, interrupted=False):
     if interrupted:
-        speak("We are back at the menu. " + SPEAK_MENU_SHORT)
+        speak("We are back at the menu." + SPEAK_MENU_SHORT)
     else:
-        speak("Pick a chapter you want to try. " + SPEAK_MENU_SHORT)
+        speak("Let's pick a chapter you want to try." + SPEAK_MENU_SHORT)
 
     idx = 0
     speak("Right now you are on: " + lesson_name(idx))
@@ -377,7 +388,7 @@ def show_menu(state, interrupted=False):
         elif raw == 'e':
             play_wav(SOUND_LESSON)
             speak(lesson_name(idx))
-            speak("Starting this chapter.")
+            speak("Let's Begin!")
             return idx
 
 # ─── After lesson: announce next + wait ───────────────────────
@@ -672,8 +683,8 @@ def main():
 
     if state["first_time"]:
         speak(
-            "Welcome to Senso. I am Sen, your teacher. "
-            "We will learn Braille together, one step at a time."
+            "Hello and Welcome to Senso. My name is Sen and I will be your teacher."
+            " We will be learning Braille together, one step at a time!"
         )
         state["first_time"] = False
         save_state(state)
