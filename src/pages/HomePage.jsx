@@ -200,20 +200,20 @@ export default function HomePage() {
           </h1>
         </div>
         <p className="hero-sub">Braille learning, made tactile</p>
-        <Link to="/login" className="btn-begin">
+        {/* <Link to="/login" className="btn-begin">
           Sign In
-        </Link>
+        </Link> */}
         <div className="hero-bypass">
           <Link
             to="/lessons"
-            className="btn-bypass btn-bypass-student"
+            className="btn-begin hero-bypass-btn"
             onClick={() => sessionStorage.setItem('senso_student_bypass', '1')}
           >
             Student Sign In
           </Link>
           <Link
             to="/dashboard"
-            className="btn-bypass btn-bypass-teacher"
+            className="btn-begin hero-bypass-btn"
             onClick={() => sessionStorage.setItem('senso_teacher_bypass', '1')}
           >
             Teacher Sign In
