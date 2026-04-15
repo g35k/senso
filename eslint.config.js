@@ -5,7 +5,14 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules', 'braille-hardware/venv']),
+  globalIgnores([
+    'dist',
+    'node_modules',
+    '**/venv/**',
+    'api/**',
+    'backend/**',
+    'braille-hardware/venv',
+  ]),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

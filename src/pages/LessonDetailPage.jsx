@@ -15,7 +15,7 @@ export default function LessonDetailPage() {
   const lesson =
     chapter.lessons.find((l) => l.id === lessonId) ?? chapter.lessons[0]
 
-  const [tick, setTick] = useState(0)
+  const [, setTick] = useState(0)
   const [deviceOk, setDeviceOk] = useState(null)
 
   const summary = getChapterSummary(chapter.lessons)

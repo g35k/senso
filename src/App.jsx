@@ -17,6 +17,8 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 import CreateAccountPage from './pages/CreateAccountPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
+import StudentProgressPage from './pages/StudentProgressPage.jsx'
+import TeacherProfilePage from './pages/TeacherProfilePage.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 
 function LessonDetailHtmlRedirect() {
@@ -307,6 +309,22 @@ export default function App() {
         element={
           <RequireAuth roles={['teacher']}>
             <DashboardPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/dashboard/students/:studentId"
+        element={
+          <RequireAuth roles={['teacher']}>
+            <StudentProgressPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/teacher-profile"
+        element={
+          <RequireAuth roles={['teacher']}>
+            <TeacherProfilePage />
           </RequireAuth>
         }
       />

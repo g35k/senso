@@ -12,19 +12,22 @@ export default function HomePage() {
   const heroCanvasRef = useRef(null)
   const [imgModalOpen, setImgModalOpen] = useState(false)
 
-  const authCode = new URLSearchParams(location.search).get('code')
-  if (authCode) {
-    return <Navigate to={`/login${location.search}`} replace />
-  }
-  const hash = location.hash
-  if (hash && /access_token|refresh_token|type=/.test(hash)) {
-    const hashPart = hash.startsWith('#') ? hash.slice(1) : hash
-    const linkType = new URLSearchParams(hashPart).get('type')
-    if (linkType === 'recovery') {
-      return <Navigate to={{ pathname: '/reset-password', hash: hashPart }} replace />
+  const redirect = (() => {
+    const authCode = new URLSearchParams(location.search).get('code')
+    if (authCode) {
+      return <Navigate to={`/login${location.search}`} replace />
     }
-    return <Navigate to={{ pathname: '/login', hash: hashPart }} replace />
-  }
+    const hash = location.hash
+    if (hash && /access_token|refresh_token|type=/.test(hash)) {
+      const hashPart = hash.startsWith('#') ? hash.slice(1) : hash
+      const linkType = new URLSearchParams(hashPart).get('type')
+      if (linkType === 'recovery') {
+        return <Navigate to={{ pathname: '/reset-password', hash: hashPart }} replace />
+      }
+      return <Navigate to={{ pathname: '/login', hash: hashPart }} replace />
+    }
+    return null
+  })()
 
   useEffect(() => {
     document.title = 'SENSO — Learn Braille'
@@ -158,6 +161,10 @@ export default function HomePage() {
     return () => observer.disconnect()
   }, [])
 
+  if (redirect) {
+    return redirect
+  }
+
   return (
     <div className="home-page" ref={rootRef}>
       <nav id="navbar">
@@ -202,11 +209,15 @@ export default function HomePage() {
             className="btn-bypass btn-bypass-student"
             onClick={() => sessionStorage.setItem('senso_student_bypass', '1')}
           >
-            Temporary student bypass
+            Student Sign In
           </Link>
-          <button type="button" className="btn-bypass btn-bypass-teacher" title="Coming soon">
-            Temporary teacher bypass
-          </button>
+          <Link
+            to="/dashboard"
+            className="btn-bypass btn-bypass-teacher"
+            onClick={() => sessionStorage.setItem('senso_teacher_bypass', '1')}
+          >
+            Teacher Sign In
+          </Link>
         </div>
         <div className="scroll-hint">scroll</div>
       </section>

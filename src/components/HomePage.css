@@ -207,7 +207,16 @@
   background: rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.85);
   border: 2px solid rgba(255, 255, 255, 0.35);
-  cursor: default;
+  cursor: pointer;
+}
+
+.home-page .btn-bypass-teacher:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.home-page .btn-bypass-teacher:active {
+  transform: scale(0.98);
 }
 
 .home-page .scroll-hint {

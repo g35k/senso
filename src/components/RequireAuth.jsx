@@ -2,7 +2,8 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { isSupabaseConfigured } from '../lib/supabaseClient.js'
 
-const BYPASS_KEY = 'senso_student_bypass'
+const STUDENT_BYPASS_KEY = 'senso_student_bypass'
+const TEACHER_BYPASS_KEY = 'senso_teacher_bypass'
 
 /**
  * @param {{ children: import('react').ReactNode, roles?: ('student' | 'teacher')[] }} props
@@ -13,10 +14,19 @@ export default function RequireAuth({ children, roles }) {
 
   const studentBypass =
     typeof sessionStorage !== 'undefined' &&
-    sessionStorage.getItem(BYPASS_KEY) === '1' &&
+    sessionStorage.getItem(STUDENT_BYPASS_KEY) === '1' &&
     roles?.includes('student')
 
   if (studentBypass) {
+    return children
+  }
+
+  const teacherBypass =
+    typeof sessionStorage !== 'undefined' &&
+    sessionStorage.getItem(TEACHER_BYPASS_KEY) === '1' &&
+    roles?.includes('teacher')
+
+  if (teacherBypass) {
     return children
   }
 
