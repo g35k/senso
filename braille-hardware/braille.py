@@ -1,3 +1,4 @@
+from gpiozero import Button
 import os
 import json
 import random
@@ -14,21 +15,20 @@ VOICES = {
 
 el_client = ElevenLabs(api_key=os.environ.get("ELEVENLABS_API_KEY"))
 CURRENT_VOICE = "sen"
+#─── GPIO Button Setup ────────────────────────────────────────
+DOT1   = Button(17, pull_up=True)
+DOT2   = Button(27, pull_up=True)
+DOT3   = Button(22, pull_up=True)
+DOT4   = Button(5,  pull_up=True)
+DOT5   = Button(6,  pull_up=True)
+DOT6   = Button(26, pull_up=True)
+SUBMIT = Button(23, pull_up=True)
+ARROW  = Button(24, pull_up=True)
 
-# ─── GPIO Button Setup ────────────────────────────────────────
-#DOT1   = Button(17, pull_up=True)
-#DOT2   = Button(27, pull_up=True)
-#DOT3   = Button(22, pull_up=True)
-#DOT4   = Button(5,  pull_up=True)
-#DOT5   = Button(6,  pull_up=True)
-#DOT6   = Button(26, pull_up=True)
-#SUBMIT = Button(23, pull_up=True)
-#ARROW  = Button(24, pull_up=True)
-
-#DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
+DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
 
 # Playback volume: 0.0 (silent) to 1.0 (max). Lower this if the speaker is too loud.
-AUDIO_VOLUME = 0.70
+AUDIO_VOLUME = 1.0
 
 # ─── TTS  ─
 def speak(text):

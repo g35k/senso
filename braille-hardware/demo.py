@@ -5,7 +5,7 @@ Run on Pi:  python demo.py
 Same controls and lesson flow as braille.py: triangle = next lesson in menu, square = select / submit dots.
 State file: demo_state.json (separate from user_state.json used by braille.py).
 """
-
+from gpiozero import Button
 import os
 import json
 import random
@@ -25,16 +25,16 @@ el_client = ElevenLabs(api_key=os.environ.get("ELEVENLABS_API_KEY"))
 CURRENT_VOICE = "sen"
 
 # ─── GPIO Button Setup ────────────────────────────────────────
-#DOT1 = Button(17, pull_up=True)
-#DOT2 = Button(27, pull_up=True)
-#DOT3 = Button(22, pull_up=True)
-#DOT4 = Button(5, pull_up=True)
-#DOT5 = Button(6, pull_up=True)
-#DOT6 = Button(26, pull_up=True)
-#SUBMIT = Button(23, pull_up=True)
-#ARROW = Button(24, pull_up=True)
+DOT1 = Button(17, pull_up=True)
+DOT2 = Button(27, pull_up=True)
+DOT3 = Button(22, pull_up=True)
+DOT4 = Button(5, pull_up=True)
+DOT5 = Button(6, pull_up=True)
+DOT6 = Button(26, pull_up=True)
+SUBMIT = Button(23, pull_up=True)
+ARROW = Button(24, pull_up=True)
 
-#DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
+DOT_BUTTONS = [DOT1, DOT2, DOT3, DOT4, DOT5, DOT6]
 
 AUDIO_VOLUME = 0.70
 
