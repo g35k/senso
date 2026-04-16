@@ -234,7 +234,7 @@ export default function HomePage() {
             title="Click to zoom"
           >
             <img
-              src="/sensoproto.png"
+              src="/sensoproto2.png"
               alt="SENSO device"
               style={{
                 width: '100%',
