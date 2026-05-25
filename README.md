@@ -1,295 +1,253 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/82addd58-54cf-4f3a-a775-b7fb7a5d84b8" width="60%" />
+  <img src="https://github.com/user-attachments/assets/82addd58-54cf-4f3a-a775-b7fb7a5d84b8" width="60%" alt="SENSO logo" />
 </p>
 
-**Winner, Open Innovation Subcategory — Hornet Hacks 4.0**
+<h1 align="center">SENSO</h1>
 
-Senso is a beginner-focused braille learning system that combines a physical input device, Raspberry Pi hardware, Python logic, and a web interface to make foundational braille literacy more interactive, engaging, and accessible.
+<p align="center">
+  <strong>Accessible braille learning — tactile hardware, guided lessons, and educational dashboards.</strong>
+</p>
 
-Built in 48 hours, Senso was designed to explore how tactile hardware and real-time software feedback can work together to support early braille learning.
-
----
-
-## Overview
-
-Senso addresses a gap in beginner braille education by pairing a tactile braille input device with a responsive learning interface. The system is designed to help users practice braille patterns, receive immediate validation, and move through lessons in a more structured and encouraging way.
-
-This project combines:
-
-- a Raspberry Pi-based hardware device using tactile switch inputs
-- Python logic for braille interpretation
-- a Flask API layer to synchronize hardware and UI
-- a React + Vite frontend for lessons and feedback
+<p align="center">
+  <a href="https://github.com/g35k/senso">Repository</a> ·
+  <strong>1st Place — Open Innovation</strong> · Hornet Hacks 4.0
+</p>
 
 ---
 
-## Why We Built It
+## About
 
-Literacy rates among the visually impaired remain alarmingly low, and many existing learning tools do not effectively support the earliest stages of braille literacy. We wanted to build something that felt more immediate, interactive, and approachable for beginners.
+**SENSO** connects a Raspberry Pi tactile input device, Python lesson logic, a Flask API, and a React web app into one braille-learning flow. Learners practice on a six-dot cell with audio-led instruction; the web app provides chapter structure, lesson tracking, and accuracy feedback.
 
-Our goal was to create a system that teaches more than recognition alone. Senso is intended to support foundational literacy through tactile learning, real-time validation, and responsive audio feedback.
+Built in 48 hours at Hornet Hacks 4.0, SENSO is now in **Version 2**: a **post-hackathon**, **pre-production** iteration with role-based auth, structured curriculum, and student/teacher dashboards. Some dashboard and analytics features are **scaffolded** while persistence and backend integration are completed.
 
----
-
-## Core Features
-
-### Physical Braille Input
-Senso uses tactile switch buttons wired to Raspberry Pi GPIO pins to represent braille cell input. This gives users a hands-on, device-based way to interact with lessons instead of relying on a screen alone.
-
-### Real-Time Validation
-User input is checked in real time so the learner can immediately tell whether a pattern is correct or incorrect.
-
-### Lesson-Based Learning
-The web interface is structured around beginner-friendly lessons, helping learners progress through foundational braille concepts in a more guided way.
-
-### Audio Feedback
-The device uses speech and sound effects to reinforce interactions and make the learning experience more responsive and engaging.
-
-### Hardware and Web Synchronization
-Flask is used to connect the Python hardware logic to the frontend interface so that physical button input and the website stay in sync.
+**Accessibility** is core: tactile-first input, on-device audio, and a web layer for structure—not sighted-only interaction.
 
 ---
 
-## System Architecture
+## Version 2 — What Changed
 
-Senso consists of three main layers:
+Version 1 proved hardware and browser could stay in sync during live practice. Version 2 turns that into a teachable, trackable system.
 
-### 1. Hardware Layer
-- Raspberry Pi
-- GPIO-wired tactile switch buttons
-- External USB speaker
+| Area | Version 1 (hackathon) | Version 2 (current direction) |
+|------|------------------------|-------------------------------|
+| **Frontend** | Single-flow lesson UI | React Router app: home, auth, lessons, lesson detail, profile, teacher dashboard |
+| **Lessons** | Basic lesson pages | Chapter-based curriculum, lesson browser, per-chapter summaries |
+| **Progress** | Device-local state | Client-side completion/accuracy; lesson views poll Pi `GET /state` for live scores |
+| **Accounts** | None | Supabase Auth — student / teacher roles, signup, password reset |
+| **Data model** | `user_state.json` on Pi | Supabase schema: profiles, students, teachers, sessions, assigned lessons (sync in progress) |
+| **API** | Flask bridge | `new_api.py` — `GET /state`, `POST /press`, `POST /next` + CORS |
+| **Operations** | Ad-hoc scripts | Example `systemd` unit for Pi Flask API |
 
-The hardware captures braille button combinations as physical input.
+**Curriculum:** Introduction (device + cell numbering) → Chapter 1 (alphabet, numbers) → Chapter 2 (punctuation/symbols).
 
-### 2. Logic and API Layer
-- Python
-- Flask
+---
 
-Python handles braille input interpretation and device-side logic. Flask acts as the bridge between the hardware scripts and the frontend so that user input can be reflected in the interface.
+## Features
 
-### 3. Frontend Layer
-- React
-- Vite
-
-The frontend presents lessons, feedback states, and interactive UI components that respond to the hardware input.
-
-### Data Flow
-
-1. The user presses a braille pattern on the hardware device  
-2. Raspberry Pi reads the GPIO input states  
-3. Python maps the input to a braille representation  
-4. Flask passes that data to the frontend  
-5. The UI updates with lesson progress, validation, and feedback  
+- **Hardware** — GPIO tactile switches (6-dot cell), submit/nav buttons, USB speaker, optional vibration (`vibration.py`)
+- **Pi runtime** — Menu-driven lessons (`braille.py` / `new_api.py`); intro, letters, numbers, practice; Optional TTS via ElevenLabs
+- **Flask bridge** — Device state exposed to the browser; configurable Pi URL in `piApi.js`
+- **Web app** — Student lessons + lesson detail with chapter analytics; role-gated auth; teacher dashboard UI; `/pi` route for API debugging
+- **Supabase** — Auth, profiles, RLS; schema for rosters, sessions, and assigned lessons; local seed data
 
 ---
 
 ## Tech Stack
 
-### Frontend
-- React
-- Vite
-- HTML
-- CSS
-- JavaScript
-
-### Backend
-- Flask
-- Python
-
-### Hardware
-- Raspberry Pi
-- GPIO
-- Tactile switch buttons
-- External USB speaker
+| Layer | Technologies |
+|-------|----------------|
+| **Frontend** | React 19, Vite, React Router |
+| **Auth & data** | Supabase (Auth, Postgres, RLS) |
+| **Device API** | Python 3, Flask, Flask-CORS |
+| **Hardware** | Raspberry Pi, GPIO (`gpiozero`), pygame |
+| **TTS** | ElevenLabs (optional) |
+| **Tooling** | ESLint, Supabase CLI, `systemd` example |
 
 ---
 
-## Project Status
+## System Architecture
 
-This repository reflects both completed work and ongoing iteration.
+Each layer is developed and tested separately, then integrated for classroom or home use.
 
-### Currently Implemented
-- physical braille input prototype
-- GPIO-based button handling
-- Python braille logic
-- React frontend
-- lesson-oriented interface
-- real-time validation concept
-- audio feedback assets
-- enclosure prototype and 3D model workflow
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                     Web app (React + Vite)                       │
+│  Auth · Lessons · Lesson detail · Profile · Teacher dashboard   │
+└────────────────────────────┬────────────────────────────────────┘
+                             │ HTTPS (Supabase)     HTTP (LAN/tunnel)
+                             ▼                      ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│   Supabase (Auth + Postgres)  │    │   Flask API (new_api.py)      │
+│   profiles · students ·       │    │   GET /state · POST /press    │
+│   teachers · sessions ·       │    │   POST /next · CORS           │
+│   assigned_lesson             │    └──────────────┬───────────────┘
+└──────────────────────────────┘                   │
+                                                   │ GPIO / threads
+                                                   ▼
+                              ┌──────────────────────────────────────┐
+                              │  Raspberry Pi lesson runtime          │
+                              │  Button input · audio · lesson state  │
+                              └──────────────────────────────────────┘
+```
 
-### In Progress
-- dedicated backend folder for Flask API organization
-- continued frontend and backend integration cleanup
-- improved enclosure design for revised hardware layout
-- expanded reproducibility for others who want to build the device
-
----
-
-## Repository Structure
+**Practice flow:** lesson on device → GPIO input → Python validation + audio → Flask `/state` → browser polls and updates chapter/lesson stats → (roadmap) sessions persist to Supabase for teachers.
 
 ```text
 senso/
-├── braille-hardware/
-│   ├── app.py
-│   ├── braille.py
-│   ├── requirements-api.txt
-│   ├── user_state.json
-│   ├── *.mp3 / *.wav
-│   └── hardware-side logic and audio assets
-├── public/
-├── src/
-│   ├── assets/
-│   ├── App.jsx
-│   ├── App.css
-│   ├── main.jsx
-│   └── index.css
-├── index.html
-├── lesson-detail.html
-├── lessons.html
-├── package.json
-├── vite.config.js
-└── README.md
+├── src/                 # React app
+├── braille-hardware/    # Pi logic, Flask API, audio
+├── supabase/            # Migrations, seed
+├── scripts/             # Pi tunnel, systemd example
+└── backend/             # Optional Next.js scaffold (not required to run main app)
 ```
-
-> Note: a separate backend/ directory for the Flask API is planned but not yet finalized in the current repository structure.
-
-Running the Project Frontend
-```bash
-cd senso
-npm install
-npm run dev
-```
-
-> Note: a separate `backend/` directory for the Flask API is planned but not yet finalized in the current repository structure.
 
 ---
 
-## Running the Project
+## Student & Teacher Dashboards
+
+**Students** browse chapters, open lesson detail for chapter-level completion and accuracy, and see Pi connection status during practice. Progress is tracked in the browser today; Supabase sync is on the roadmap.
+
+**Teachers** get a dashboard for class overview and expanded per-student detail (see screenshots). The UI and database model (rosters, assignments, sessions) are in place; deeper analytics and full cloud persistence are **actively developed**.
+
+---
+
+## Accessibility Goals
+
+- **Tactile-first** practice without relying on typing or precise pointer control  
+- **Audio-led** instruction on the device  
+- **Immediate feedback** — sounds, completion, accuracy  
+- **Web as secondary** — structure and analytics, not the only learning channel  
+- **Semantic HTML** where implemented (`role`, `aria-label`, `aria-expanded`)
+
+Roadmap: voice customization, screen-reader-tested flows, pronunciation practice (not shipped yet).
+
+---
+
+## Challenges Encountered
+
+- **First hardware build for the team** — GPIO, debouncing, and enclosure under a 48-hour deadline  
+- **Pi ↔ browser sync** — LAN reliability, polling, and on-device state so the UI feels live  
+- **Demo reliability** — Hornet Hacks Wi‑Fi blocked on-site Pi demo; remote operation over Discord led to tunnels, `systemd`, and clearer API boundaries  
+- **Split runtimes** — Low-latency lessons on the Pi; accounts and classroom data in Supabase — integration is ongoing  
+- **Scoped v2 delivery** — Dashboards and analytics scaffolded without overstating production readiness  
+
+---
+
+## Lessons Learned
+
+- **Systems thinking beats feature lists** — The contract between GPIO, Python state, Flask JSON, and React matters more than any single screen  
+- **Accessibility is architectural** — Audio, tactile input, and progress visibility belong in the design from the start  
+- **Cross-disciplinary alignment** — Hardware layout, API shape, and lesson copy had to stay in sync across six roles  
+- **Ship the bridge early** — A small Flask API (`/state`, `/press`, `/next`) unblocked the frontend before Supabase was complete  
+- **Operational docs matter** — Seed data and recoverable Pi services matter as much as demo-day wins  
+
+---
+
+## Future Roadmap
+
+- [ ] Sync Pi/web session data to Supabase  
+- [ ] Teacher dashboard: assignments, per-student trends  
+- [ ] Student profile tied to stored stats  
+- [ ] Multi-cell display, richer practice modes  
+- [ ] Voice options, pronunciation checking  
+- [ ] Enclosure/STL aligned to final GPIO layout  
+- [ ] Expanded curriculum, hardware setup guide  
+
+---
+
+## Screenshots & Demo
+
+Captures in [`docs/screenshots/`](docs/screenshots/).
+
+### Student portal
+
+| | |
+|:---:|:---:|
+| ![SENSO home page](docs/screenshots/home.png) | ![Student lessons browser](docs/screenshots/lessons.png) |
+| *Home / onboarding* | *Lessons — chapter list and progress* |
+
+| |
+|:---:|
+| ![Student lesson detail with chapter analytics](docs/screenshots/lesson-detail.png) |
+| *Lesson detail — chapter scores and per-lesson progress* |
+
+### Teacher portal
+
+| | |
+|:---:|:---:|
+| ![Teacher dashboard overview](docs/screenshots/dashboard.png) | ![Teacher dashboard — expanded student detail](docs/screenshots/dashboard-detail.png) |
+| *Class overview — roster and lesson completion* | *Expanded student view — per-lesson accuracy and practice history* |
+
+### Hackathon demo (Version 1)
+
+![Hardware demo](https://github.com/user-attachments/assets/3aac79a6-7c39-43b9-bd61-7b82d06c102d)
+
+![Web UI demo](https://github.com/user-attachments/assets/3eb773f6-7186-4fd8-86b5-b51ac34a6b40)
+
+---
+
+## Setup
+
+**Prerequisites:** Node.js 18+, Python 3.10+, Supabase project (for auth), Raspberry Pi + GPIO wiring (for full hardware), optional `ELEVENLABS_API_KEY`.
 
 ### Frontend
 
 ```bash
-cd senso
-npm install
+git clone https://github.com/g35k/senso.git && cd senso
+npm install && cp .env.example .env
+# VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY — see .env.example for redirect URLs
 npm run dev
 ```
 
-### Backend / Flask Layer
-
-The Flask API is still being reorganized into a dedicated backend folder. At the moment, related Python files live under `braille-hardware/`.
-
-A future structure may look like:
+### Supabase
 
 ```bash
-cd backend
-pip install -r requirements.txt
-python app.py
+supabase start          # optional local stack
+supabase db reset       # migrations + seed (supabase/seed.sql)
 ```
 
-### Hardware
+### Flask API (Mac or Pi)
 
-To run the hardware prototype, you will need:
+```bash
+cd braille-hardware && python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-api.txt
+# Pi only: pip install -r requirements-api-pi.txt
+export SENSO_MODE=api PORT=5001
+python new_api.py --api
+```
 
-- a Raspberry Pi
-- tactile switch buttons wired to GPIO
-- an external USB speaker
-- the Python scripts in `braille-hardware/`
+Point the web app at your Pi (e.g. `http://192.168.1.10:5001`) in lesson detail or `/pi`. Persistent service: `scripts/senso-flask-api.service`.
 
-Because the hardware is still being iterated on, setup instructions for pin mappings and assembly are still in progress.
+**Env vars:** `VITE_SUPABASE_*` (frontend), `ELEVENLABS_API_KEY` / `PORT` / `SENSO_MODE=api` (Pi).
 
----
-
-## Reproducibility and 3D Enclosure
-
-One important part of this project is that it is being developed with reproducibility in mind.
-
-We plan to include STL files for the device enclosure so others can:
-- print the case
-- source the components
-- assemble the hardware
-- run the project themselves
-
-The enclosure was self-modeled during the hackathon as a first-pass prototype. It will be revised because the final circuit layout did not fit the original breadboard assumptions.
-
-That said, we still intend to include the model files because they document the design process and make the project more buildable for others.
-
-> The current enclosure should be considered a prototype iteration, not a final manufacturing-ready design.
-
----
-
-## Demo
-
-![senso1-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/3aac79a6-7c39-43b9-bd61-7b82d06c102d)
-
-![senso-ui-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/3eb773f6-7186-4fd8-86b5-b51ac34a6b40)
-
-**Demo video coming soon.**
-
----
-
-## Technical Challenges
-
-### Building Hardware Without Prior Hardware Experience
-
-This project was built by a team with no previous hardware background. That meant learning wiring, GPIO interaction, button mapping, and physical prototyping under a tight time constraint.
-
-### Synchronizing Hardware with a Web Interface
-
-One of the core technical challenges was creating a system where physical device input could meaningfully drive a browser-based learning experience.
-
-### Designing for Real-Time Feedback
-
-The project required fast enough communication between hardware logic and UI feedback to make interaction feel immediate and useful for learning.
-
-### Rapid Physical Prototyping
-
-The enclosure and device form factor had to be conceptualized, modeled, and adapted quickly, while the underlying circuit design was still evolving.
-
----
-
-## Hackathon Context
-
-Senso was built in 48 hours at Hornet Hacks 4.0 and won the Open Innovation subcategory.
-
-During the final presentation, we ran into Raspberry Pi connection issues and could not demo the device from inside the building. To adapt, part of the team operated Senso remotely from nearby while the live demo was presented over Discord.
-
-That experience reinforced one of the biggest lessons of the project: robust systems are not just about building features, but also about adapting under real-world constraints.
+**Optional:** `backend/` is a minimal Next.js scaffold — not needed to run the Vite app.
 
 ---
 
 ## Team
 
-### Team Manta
+**Team Manta** — six-person cross-disciplinary build (hardware, Pi, UI/UX, backend, frontend, product).
 
-- **Kayla Garibay** — Team Lead and Product
-- **Ankita Patwal** — Systems, Scripting, and Pi Logic
-- **Althaea Locano** — Hardware and Circuits
-- **Jenna Jimenez** — Lead UI/UX Engineer
-- **Indira Debbad** — Backend Engineer
-- **Shelby Faith Solana** — Frontend Engineer
-
----
-
-## Future Work
-
-- multi-cell braille display
-- voice and audio customization
-- pronunciation checking via microphone
-- refined enclosure and industrial design
-- finalized backend structure
-- clearer hardware documentation
-- expanded lessons and learning flow
+| Name | Role |
+|------|------|
+| **Kayla Garibay** | Team Lead · Full-Stack Engineering · Product/Systems Integration|
+| **Ankita Patwal** | Systems · Scripting · Raspberry Pi Logic |
+| **Althaea Locano** | Hardware · Circuits |
+| **Jenna Jimenez** | Lead UI/UX |
+| **Indira Debbad** | Backend Engineering |
+| **Shelby Faith Solana** | Frontend Engineering |
 
 ---
 
-## Notes
+## Project status
 
-This project is still being actively refined after the hackathon. The current repository captures both the functional prototype and the next stage of planned improvements.
+SENSO is **actively developed**: tactile lessons and the Flask bridge work end-to-end; Version 2 adds auth, curriculum structure, and dashboard UI. Main integration work: cloud persistence and teacher analytics.
+
+Issues and feedback: [GitHub](https://github.com/g35k/senso).
 
 ---
 
-## Repository
+## License
 
-[https://github.com/g35k/senso](https://github.com/g35k/senso)
-
+See repository license file if present; otherwise contact maintainers for usage terms.
