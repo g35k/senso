@@ -231,7 +231,7 @@ Point the web app at your Pi (e.g. `http://192.168.1.10:5001`) in lesson detail 
 
 | Name | Role |
 |------|------|
-| **Kayla Garibay** | Team Lead · Full-Stack Engineering · Product/Systems Integration|
+| **Kayla Garibay** | Team Lead · Full-Stack Engineering · Product Integration |
 | **Ankita Patwal** | Systems · Scripting · Raspberry Pi Logic |
 | **Althaea Locano** | Hardware · Circuits |
 | **Jenna Jimenez** | Lead UI/UX |

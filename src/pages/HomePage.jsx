@@ -12,19 +12,22 @@ export default function HomePage() {
   const heroCanvasRef = useRef(null)
   const [imgModalOpen, setImgModalOpen] = useState(false)
 
-  const authCode = new URLSearchParams(location.search).get('code')
-  if (authCode) {
-    return <Navigate to={`/login${location.search}`} replace />
-  }
-  const hash = location.hash
-  if (hash && /access_token|refresh_token|type=/.test(hash)) {
-    const hashPart = hash.startsWith('#') ? hash.slice(1) : hash
-    const linkType = new URLSearchParams(hashPart).get('type')
-    if (linkType === 'recovery') {
-      return <Navigate to={{ pathname: '/reset-password', hash: hashPart }} replace />
+  const redirect = (() => {
+    const authCode = new URLSearchParams(location.search).get('code')
+    if (authCode) {
+      return <Navigate to={`/login${location.search}`} replace />
     }
-    return <Navigate to={{ pathname: '/login', hash: hashPart }} replace />
-  }
+    const hash = location.hash
+    if (hash && /access_token|refresh_token|type=/.test(hash)) {
+      const hashPart = hash.startsWith('#') ? hash.slice(1) : hash
+      const linkType = new URLSearchParams(hashPart).get('type')
+      if (linkType === 'recovery') {
+        return <Navigate to={{ pathname: '/reset-password', hash: hashPart }} replace />
+      }
+      return <Navigate to={{ pathname: '/login', hash: hashPart }} replace />
+    }
+    return null
+  })()
 
   useEffect(() => {
     document.title = 'SENSO — Learn Braille'
@@ -54,12 +57,12 @@ export default function HomePage() {
     const device = new THREE.Group()
     scene.add(device)
 
-    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x6b7280 })
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0xffffff })
     device.add(new THREE.Mesh(new THREE.BoxGeometry(6, 1.5, 4), bodyMat))
 
     const cap = new THREE.Mesh(
       new THREE.BoxGeometry(5.85, 0.07, 3.85),
-      new THREE.MeshLambertMaterial({ color: 0x6b7280 }),
+      new THREE.MeshLambertMaterial({ color: 0xffffff }),
     )
     cap.position.y = 0.78
     device.add(cap)
@@ -80,7 +83,7 @@ export default function HomePage() {
 
     const enter = new THREE.Mesh(
       new THREE.BoxGeometry(0.92, 0.22, 0.92),
-      new THREE.MeshLambertMaterial({ color: 0x1a2a4a }),
+      new THREE.MeshLambertMaterial({ color: 0xf05a28 }),
     )
     enter.position.set(1.6, 0.75 + 0.11, -0.75)
     device.add(enter)
@@ -90,9 +93,9 @@ export default function HomePage() {
     triShape.lineTo(0.5, 0.35)
     triShape.lineTo(-0.5, 0.35)
     triShape.closePath()
-
+    //0x1a2a4a  0xf05a28
     const triGeo = new THREE.ExtrudeGeometry(triShape, { depth: 0.22, bevelEnabled: false })
-    const bs = new THREE.Mesh(triGeo, new THREE.MeshLambertMaterial({ color: 0xf05a28 }))
+    const bs = new THREE.Mesh(triGeo, new THREE.MeshLambertMaterial({ color: 0x1a2a4a }))
     bs.rotation.x = -Math.PI / 2
     bs.rotation.z = Math.PI / 2
     bs.position.set(1.6, 0.75 + 0.11, 0.65)
@@ -158,6 +161,10 @@ export default function HomePage() {
     return () => observer.disconnect()
   }, [])
 
+  if (redirect) {
+    return redirect
+  }
+
   return (
     <div className="home-page" ref={rootRef}>
       <nav id="navbar">
@@ -193,20 +200,24 @@ export default function HomePage() {
           </h1>
         </div>
         <p className="hero-sub">Braille learning, made tactile</p>
-        <Link to="/login" className="btn-begin">
+        {/* <Link to="/login" className="btn-begin">
           Sign In
-        </Link>
+        </Link> */}
         <div className="hero-bypass">
           <Link
             to="/lessons"
-            className="btn-bypass btn-bypass-student"
+            className="btn-begin hero-bypass-btn"
             onClick={() => sessionStorage.setItem('senso_student_bypass', '1')}
           >
-            Temporary student bypass
+            Student Sign In
           </Link>
-          <button type="button" className="btn-bypass btn-bypass-teacher" title="Coming soon">
-            Temporary teacher bypass
-          </button>
+          <Link
+            to="/dashboard"
+            className="btn-begin hero-bypass-btn"
+            onClick={() => sessionStorage.setItem('senso_teacher_bypass', '1')}
+          >
+            Teacher Sign In
+          </Link>
         </div>
         <div className="scroll-hint">scroll</div>
       </section>
@@ -223,7 +234,7 @@ export default function HomePage() {
             title="Click to zoom"
           >
             <img
-              src="/sensoproto.png"
+              src="/sensoproto2.png"
               alt="SENSO device"
               style={{
                 width: '100%',
